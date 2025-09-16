@@ -1,0 +1,28 @@
+html {
+  overscroll-behavior: contain;
+}
+
+:root {
+  --rds-primary: #007dc5;
+  --rds-primary-light: #3fb1f3;
+  --rds-primary-rgb: 0, 125, 197;
+  --dsl-black: #0d0d0d;
+  --dsl-red: #cc2f2f;
+  --rds-font-family: "Open Sans";
+  --dsl-bg: linear-gradient(
+    180deg,
+    var(--rds-primary) 0%,
+    var(--rds-primary-light) 100%
+  );
+  --dsl-bg-opacity: 0.3;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}

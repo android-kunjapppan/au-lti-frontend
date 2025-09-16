@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "unifiedjs.vscode-mdx",
+    "dbaeumer.vscode-eslint",
+    "davidanson.vscode-markdownlint",
+    "ms-vscode.vscode-typescript-next",
+    "tombonnike.vscode-status-bar-format-toggle",
+    "vue.volar",
+    "sdras.vue-vscode-snippets"
+  ]
+}

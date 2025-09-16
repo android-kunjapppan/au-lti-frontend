@@ -1,0 +1,5 @@
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$branch" != "main" ]; then
+  echo "-- Enforcing git-cz useage"
+  exec < /dev/tty && node_modules/.bin/git-cz --hook || true
+fi

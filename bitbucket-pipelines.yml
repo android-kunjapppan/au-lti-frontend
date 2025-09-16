@@ -1,0 +1,46 @@
+image: node:lts-iron # v20 Active LTS
+
+definitions:
+  steps:
+    - step: &Test
+        script:
+          - echo "Testing....."
+    - step: &Deploy
+        oidc: true
+        trigger: manual
+        caches:
+          - node
+        script:
+          - corepack enable
+          - corepack use pnpm@9.9.0
+          - pnpm install
+          - pnpm generate
+          - pipe: atlassian/aws-s3-deploy:1.2.0
+            variables:
+              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+              AWS_OIDC_ROLE_ARN: $AWS_OIDC_ROLE_ARN
+              S3_BUCKET: $S3_BUCKET
+              LOCAL_PATH: ".output/public"
+              DELETE_FLAG: "true"
+          - pipe: atlassian/aws-cloudfront-invalidate:0.7.0
+            variables:
+              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+              AWS_OIDC_ROLE_ARN: $AWS_OIDC_ROLE_ARN
+              DISTRIBUTION_ID: $DISTRIBUTION_ID
+        artifacts:
+          - .output/public/**
+
+pipelines:
+  branches:
+    master:
+      - step: *Test
+      - step:
+          <<: *Deploy
+          name: Deploy to Production
+          deployment: Production
+    nonprod-qa:
+      - step: *Test
+      - step:
+          <<: *Deploy
+          name: Deploy to Dev
+          deployment: Dev

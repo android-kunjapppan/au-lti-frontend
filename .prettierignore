@@ -1,0 +1,5 @@
+.husky/**
+.gitconfig
+.gitignore
+.prettierignore
+pnpm-lock.yaml

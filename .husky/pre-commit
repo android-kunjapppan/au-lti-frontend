@@ -1,0 +1,7 @@
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$branch" != "main" ]; then
+  echo "-- Running linter"
+  pnpm lint-staged
+  echo "-- Finished running linter"
+  git add .
+fi

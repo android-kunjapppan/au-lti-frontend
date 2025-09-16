@@ -1,0 +1,77 @@
+{
+  "name": "language-buddy-frontend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky && git config --local include.path ../.gitconfig",
+    "build": "APP_ENV=prod nuxt build",
+    "build:dev": "APP_ENV=dev nuxt build",
+    "dev": "nuxt dev",
+    "dev:local": "USE_LOCAL_SERVER=true nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "release": "standard-version"
+  },
+  "engines": {
+    "npm": ">=8.0.0 <9.0.0",
+    "yarn": ">=3.0.0 <4.0.0",
+    "pnpm": ">=9.9.0",
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@floating-ui/vue": "^1.1.6",
+    "@iconify-json/fa6-solid": "^1.2.3",
+    "@iconify-json/material-symbols": "^1.2.14",
+    "@lottiefiles/dotlottie-vue": "^0.5.6",
+    "@nuxt/eslint": "0.7.4",
+    "@pinia/nuxt": "^0.9.0",
+    "@rds-vue-ui/analytics-gs-composable": "^0.0.6",
+    "@rds-vue-ui/rds-dropdown": "^0.1.9",
+    "@rds-vue-ui/rds-theme-base": "^0.5.3",
+    "@tresjs/cientos": "^4.0.3",
+    "@tresjs/core": "^4.3.2",
+    "@tresjs/nuxt": "3.0.7",
+    "@tresjs/post-processing": "^2.0.0",
+    "@vueuse/core": "^12.7.0",
+    "@vueuse/integrations": "^12.3.0",
+    "lint-staged": "^15.2.7",
+    "nuxt": "~3.15.0",
+    "pinia": "^2.3.0",
+    "three": "^0.172.0",
+    "tres": "^0.0.0",
+    "vite-plugin-glsl": "1.3.3",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@iconify-json/mdi": "^1.2.3",
+    "@tweakpane/core": "^2.0.5",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@types/node": "^22.10.2",
+    "@types/three": "^0.172.0",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "dat.gui": "^0.7.9",
+    "eslint": "9.17.0",
+    "eslint-config-prettier": "9.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.7",
+    "prettier": "^3.4.2",
+    "sass": "^1.63.6",
+    "tweakpane": "^4.0.5",
+    "typescript": "~5.7.2",
+    "unplugin-icons": "^22.0.0",
+    "unplugin-vue-components": "^28.0.0",
+    "vue-tsc": "^2.2.0"
+  },
+  "packageManager": "pnpm@9.15.1+sha256.9e534e70afef06374f6126b44bda5760947135ce16a30aef1010e965fb7e3e3e",
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
