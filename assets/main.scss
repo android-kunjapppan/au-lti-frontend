@@ -6,7 +6,7 @@ html {
   --rds-primary: #007dc5;
   --rds-primary-light: #3fb1f3;
   --rds-primary-rgb: 0, 125, 197;
-  --dsl-black: #0d0d0d;
+  --dsl-black: #191919;
   --dsl-red: #cc2f2f;
   --rds-font-family: "Open Sans";
   --dsl-bg: linear-gradient(
@@ -15,6 +15,84 @@ html {
     var(--rds-primary-light) 100%
   );
   --dsl-bg-opacity: 0.3;
+  --dsl-alert-bg: #f7dddd;
+  --rds-white-bg: rgba(255, 252, 245, 1);
+  --rds-waveform-bg: rgba(255, 255, 255, 1);
+  --rds-gray-bg: rgba(116, 116, 116, 1);
+  --rds-opacity-bg: rgba(255, 255, 255, 0.8);
+  --rds-msg-bg: rgba(232, 232, 232, 1);
+  --rds-buttons-bg: #484848;
+  --rds-translate-border: rgba(208, 208, 208, 1);
+  --rds-label-color: rgba(25, 25, 25, 1);
+  --rds-label-hover-bg: rgba(25, 25, 25, 0.1);
+  --rds-z-index-100: 100;
+  --rds-z-index-footer: 900;
+  --rds-border-radius-pill: 100px;
+  --rds-success-hover: #4a7c0e;
+  --rds-success-rgb: 74, 124, 14;
+  --rds-success: #4a7c0e;
+  --rds-success-light-hover: #73bf16;
+  --rds-success-light: #7fca22;
+  --rds-text-primary: #191919;
+  --rds-alert-box-shadow: #0000001f;
+  --rds-background-gradient: linear-gradient(
+    257.56deg,
+    #fefcf5 47.74%,
+    #fff6e2 98.52%
+  );
+  --rds-footer-bg: #fffcf5;
+  --rds-disclaimer-bg: #f4edd4;
+  --rds-section-bg: rgba(0, 0, 0, 0.02);
+  --rds-suggestion-box: rgba(233, 245, 219, 1);
+  --rds-scrollbar-thumb: #d3e5bd;
+  --standard-transition-duration: 0.25s;
+  --y-container-spacing: 100px;
+
+  --btn-hover-bg: #f4edd4;
+
+  /* Dashboard */
+  --rds-dashboard-bg: #f6f8fa;
+  --rds-green: #78be20;
+  --rds-maroon: #8c1d40;
+
+  /* Table */
+  --rds-body-bg: var(--rds-light-1);
+
+  /* Microphone button states */
+  --mic-inactive: rgba(101, 160, 27, 1);
+  --mic-active: rgba(255, 0, 0, 1);
+  --mic-disabled: rgb(112, 112, 112);
+  --mic-retry-icon-size: 26px;
+
+  /* Icon sizes */
+  --stop-icon-size: 24px;
+
+  /* Manual input colors */
+  --mic-input-border: #ccc;
+
+  /* Waveform colors */
+  --mic-waveform-gradient-start: rgba(190, 190, 190, 0.2);
+  --mic-waveform-gradient-end: rgba(190, 190, 190, 0.8);
+  --mic-waveform-shadow: rgba(0, 0, 0, 0.16);
+
+  --mic-icon-white: rgba(250, 250, 250, 1);
+}
+
+/* Force override the CSS custom property */
+html {
+  --rds-card-border-radius: 0.5rem !important;
+}
+
+body {
+  --rds-card-border-radius: 0.5rem !important;
+}
+
+/* Override Bootstrap card border-radius with higher specificity */
+.card,
+.card-header,
+.card-body,
+.card-footer {
+  border-radius: 0.5rem !important;
 }
 
 .fade-enter-active,
@@ -25,4 +103,73 @@ html {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.w-0 {
+  width: 0;
+}
+
+.mh-100vh {
+  max-height: 100vh;
+}
+
+.rounded-sm {
+  border-radius: 15px;
+}
+
+.rounded-md {
+  border-radius: 32px;
+}
+
+/*TODO: Make match mockup*/
+.pretty-scrollbar {
+  /* width */
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  /* Track */
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Handle */
+  &::-webkit-scrollbar-thumb {
+    border-radius: var(--rds-border-radius-pill);
+    background: var(--rds-light-4);
+  }
+}
+
+.slot-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.environment-image {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Spinner animation */
+@keyframes spinDots {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.spin-slow {
+  animation: spinDots 5s linear infinite;
+  transform-origin: center center;
+}
+.spin-fast {
+  animation: spinDots 1.5s linear infinite;
+  transform-origin: center center;
 }

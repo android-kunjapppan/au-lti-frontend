@@ -12,11 +12,13 @@ interface Props {
   src: string;
   timeout?: number;
   class?: string;
+  loop?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   timeout: 3000,
   class: "",
+  loop: true,
 });
 
 const playerRef = ref<typeof DotLottieVue>();
@@ -34,7 +36,7 @@ const startTimer = () => {
 };
 
 watch(animationEnded, async (newValue) => {
-  if (newValue === true) {
+  if (newValue === true && props.loop) {
     if (isPending) stop();
     start();
   }

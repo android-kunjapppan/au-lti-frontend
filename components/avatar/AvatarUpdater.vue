@@ -8,9 +8,11 @@
 
 <script setup lang="ts">
 /** Used to swap the mode on the dev version */
-import type { GLTFResult } from "@tresjs/cientos";
 import { useDropZone } from "@vueuse/core";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import {
+  GLTFLoader,
+  type GLTF,
+} from "three/examples/jsm/loaders/GLTFLoader.js";
 const avatarStore = useAvatarStore();
 const dropZoneRef = ref<HTMLDivElement>();
 
@@ -22,7 +24,7 @@ const onDrop = async (files: File[] | null) => {
     console.log("file data: ", await files[0].arrayBuffer());
     loader.parse(await files[0].arrayBuffer(), "/", (object) => {
       console.log("Loaded", object);
-      avatarStore.updateAvatarModel(object as unknown as GLTFResult);
+      avatarStore.updateAvatarModel(object as unknown as GLTF);
     });
   }
 };

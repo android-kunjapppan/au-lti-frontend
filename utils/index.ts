@@ -2,7 +2,6 @@ declare const window: Window & {
   dataLayer?: object[];
   utag?: Record<string, unknown>[];
 };
-
 /**
  * @description helps reset the dataLayer to handle the issue where attributes that aren't present in future events, will carry over to new events.
  */
@@ -56,4 +55,19 @@ export const decodeBase64Audio = async (args: {
     console.error("Error decoding base64 audio:", error);
     return null;
   }
+};
+
+export const createApiHeaders = (
+  additionalHeaders: Record<string, string> = {}
+): Record<string, string> => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...additionalHeaders,
+  };
+
+  if (process.env.NODE_ENV === "development") {
+    headers["ngrok-skip-browser-warning"] = "true";
+  }
+
+  return headers;
 };

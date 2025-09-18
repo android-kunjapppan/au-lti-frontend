@@ -30,14 +30,7 @@ try {
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  nitro: {
-    prerender: {
-      crawlLinks: true,
-      failOnError: false,
-    },
-    preset: "static",
-    static: true,
-  },
+  ssr: false,
   typescript: {
     typeCheck: true,
     tsConfig: {
@@ -45,6 +38,11 @@ export default defineNuxtConfig({
         noImplicitThis: false,
         types: ["vite-plugin-glsl/ext"],
       },
+    },
+  },
+  hooks: {
+    "prerender:routes"({ routes }) {
+      routes.clear();
     },
   },
   experimental: {
@@ -56,21 +54,28 @@ export default defineNuxtConfig({
     transpile: ["@rds-vue-ui"],
   },
   runtimeConfig: {
-    // Keys within public, will be also exposed to the client-side
     public: {
-      // set to dev by default or prod during build
       stage: process.env.APP_ENV || "dev",
       siteVersion: siteVersion,
-      apiUrl: process.env.USE_LOCAL_SERVER
+      signInUrl: process.env.APP_URL
+        ? `https://weblogin.asu.edu/cas/login?service=https://auth-main-poc.aiml.asu.edu/app/?aid=g1WGR674bvIeL7bVgfXIAU%26eid=64d2fcdd0845688c5e3e6850da11fe5f%26redirect=https://${process.env.APP_URL}/login/success`
+        : `https://weblogin.asu.edu/cas/login?service=https://auth-main-poc.aiml.asu.edu/app/?aid=g1WGR674bvIeL7bVgfXIAU%26eid=64d2fcdd0845688c5e3e6850da11fe5f%26redirect=http://localhost:3000/login/success`,
+      // Now coming from environment variables
+      wsUrl: process.env.USE_LOCAL_SERVER
         ? "http://localhost:3001"
-        : "https://alpha-rodney.future.edpl.us",
+        : `wss://${process.env.BACKEND_URL}`,
+      httpApiUrl: process.env.USE_LOCAL_SERVER
+        ? "http://localhost:3001"
+        : `https://${process.env.BACKEND_URL}`,
+      oAuthRedirectUrl: process.env.USE_LOCAL_SERVER
+        ? "http://localhost:3001/oauth/callback"
+        : `https://${process.env.BACKEND_URL}/oauth/callback`,
     },
   },
   css: [
     "@rds-vue-ui/rds-theme-base/dist/css/rds-theme-base.css",
     "~/assets/main.scss",
   ],
-
   components: [
     { path: "~/components" },
     {

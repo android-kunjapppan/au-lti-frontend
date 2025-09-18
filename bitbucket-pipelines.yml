@@ -11,18 +11,21 @@ definitions:
         caches:
           - node
         script:
+          - npm install -g corepack@latest
           - corepack enable
           - corepack use pnpm@9.9.0
           - pnpm install
-          - pnpm generate
-          - pipe: atlassian/aws-s3-deploy:1.2.0
+          - pnpm build
+          - pipe: atlassian/aws-s3-deploy:2.1.0
             variables:
               AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
               AWS_OIDC_ROLE_ARN: $AWS_OIDC_ROLE_ARN
               S3_BUCKET: $S3_BUCKET
+              VITE_CANVAS_URL: $VITE_CANVAS_URL
+              VITE_CLIENT_ID: $VITE_CLIENT_ID
               LOCAL_PATH: ".output/public"
               DELETE_FLAG: "true"
-          - pipe: atlassian/aws-cloudfront-invalidate:0.7.0
+          - pipe: atlassian/aws-cloudfront-invalidate:0.12.0
             variables:
               AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
               AWS_OIDC_ROLE_ARN: $AWS_OIDC_ROLE_ARN
@@ -32,15 +35,21 @@ definitions:
 
 pipelines:
   branches:
-    master:
+    main:
       - step: *Test
       - step:
           <<: *Deploy
-          name: Deploy to Production
-          deployment: Production
+          name: Deploy to prod
+          deployment: prod
     nonprod-qa:
       - step: *Test
       - step:
           <<: *Deploy
-          name: Deploy to Dev
-          deployment: Dev
+          name: Deploy to nonprod-qa
+          deployment: nonprod-qa
+    nonprod:
+      - step: *Test
+      - step:
+          <<: *Deploy
+          name: Deploy to nonprod
+          deployment: nonprod

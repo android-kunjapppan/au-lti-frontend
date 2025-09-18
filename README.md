@@ -33,6 +33,13 @@ Start the development server on `http://localhost:3000`:
 pnpm dev
 ```
 
+Start the development server and point it to a local server:
+
+```bash
+# pnpm
+pnpm dev:local
+```
+
 ## Production
 
 Build the application for production:
@@ -47,21 +54,21 @@ pnpm build
 ### Set in Bitbucket Pipelines
 
 - AWS_OIDC_ROLE_ARN
-    - arn of IAM role used for OIDC Authentication
+  - arn of IAM role used for OIDC Authentication
 - S3_BUCKET
-    - Name of S3 bucket
+  - Name of S3 bucket
 - DISTRIBUTION_ID
-    - Cloudfront distribution ID
+  - Cloudfront distribution ID
 - AWS_DEFAULT_REGION
-    - us-west-2
-- VITE_API_URL
-    - Backend base URL at lti route (e.g. https://nonprod-lb-service.let.edpl.us/lti)
+  - us-west-2
+- BACKEND_URL
+  - Url for the backend service no `https://` or `/` (e.g. nonprod-lb-service.let.edpl.us)
+- APP_URL
+  - Url for the frontend. no `https://` or `/` (e.g. dev.languagebuddy.asu.edu)
 - VITE_CANVAS_URL
-    - The URL of Canvas instance where app is running (e.g. https://asu-dev.instructure.com)
-- VITE_CANVAS_REDIRECT_URI
-    - Backend service /oauth/callback route (e.g. https://nonprod-lb-service.let.edpl.us/oauth/callback)
+  - The URL of Canvas instance where app is running (e.g. https://asu-dev.instructure.com)
 - VITE_CLIENT_ID
-    - The API Developer Key Client ID (will need to receive from LMS team once they have setup API Developer Key)
+  - The API Developer Key Client ID (will need to receive from LMS team once they have setup API Developer Key)
 
 ## Contribution guidelines
 
