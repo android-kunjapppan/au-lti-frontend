@@ -1,6 +1,6 @@
 declare global {
-  const __buildAssetsURL: (typeof import("../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_kh3xpxlje7ewug3wzkeclehluq/node_modules/nuxt/dist/core/runtime/nitro/paths"))["buildAssetsURL"];
-  const __publicAssetsURL: (typeof import("../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_kh3xpxlje7ewug3wzkeclehluq/node_modules/nuxt/dist/core/runtime/nitro/paths"))["publicAssetsURL"];
+  const __buildAssetsURL: (typeof import("../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/core/runtime/nitro/paths"))["buildAssetsURL"];
+  const __publicAssetsURL: (typeof import("../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/core/runtime/nitro/paths"))["publicAssetsURL"];
   const appendCorsHeaders: (typeof import("../../node_modules/.pnpm/h3@1.13.1/node_modules/h3"))["appendCorsHeaders"];
   const appendCorsPreflightHeaders: (typeof import("../../node_modules/.pnpm/h3@1.13.1/node_modules/h3"))["appendCorsPreflightHeaders"];
   const appendHeader: (typeof import("../../node_modules/.pnpm/h3@1.13.1/node_modules/h3"))["appendHeader"];
@@ -20,7 +20,7 @@ declare global {
   const createEventStream: (typeof import("../../node_modules/.pnpm/h3@1.13.1/node_modules/h3"))["createEventStream"];
   const createRouter: (typeof import("../../node_modules/.pnpm/h3@1.13.1/node_modules/h3"))["createRouter"];
   const defaultContentType: (typeof import("../../node_modules/.pnpm/h3@1.13.1/node_modules/h3"))["defaultContentType"];
-  const defineAppConfig: (typeof import("../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_kh3xpxlje7ewug3wzkeclehluq/node_modules/nuxt/dist/core/runtime/nitro/config"))["defineAppConfig"];
+  const defineAppConfig: (typeof import("../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/core/runtime/nitro/config"))["defineAppConfig"];
   const defineCachedEventHandler: (typeof import("../../node_modules/.pnpm/nitropack@2.10.4_typescript@5.7.3/node_modules/nitropack/dist/runtime/internal/cache"))["defineCachedEventHandler"];
   const defineCachedFunction: (typeof import("../../node_modules/.pnpm/nitropack@2.10.4_typescript@5.7.3/node_modules/nitropack/dist/runtime/internal/cache"))["defineCachedFunction"];
   const defineEventHandler: (typeof import("../../node_modules/.pnpm/h3@1.13.1/node_modules/h3"))["defineEventHandler"];
@@ -257,5 +257,5 @@ export {
 export {
   buildAssetsURL as __buildAssetsURL,
   publicAssetsURL as __publicAssetsURL,
-} from "../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_kh3xpxlje7ewug3wzkeclehluq/node_modules/nuxt/dist/core/runtime/nitro/paths";
-export { defineAppConfig } from "../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_kh3xpxlje7ewug3wzkeclehluq/node_modules/nuxt/dist/core/runtime/nitro/config";
+} from "../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/core/runtime/nitro/paths";
+export { defineAppConfig } from "../../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/core/runtime/nitro/config";

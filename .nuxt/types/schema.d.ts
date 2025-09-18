@@ -210,7 +210,13 @@ declare module "nuxt/schema" {
 
     siteVersion: string;
 
-    apiUrl: string;
+    signInUrl: string;
+
+    wsUrl: string;
+
+    httpApiUrl: string;
+
+    oAuthRedirectUrl: string;
   }
 }
 declare module "vue" {

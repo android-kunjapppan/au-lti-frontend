@@ -192,23 +192,101 @@ export {
   useServerHeadSafe,
 } from "@unhead/vue";
 export { useIsMobile } from "../composables/isMobile";
-export { useChatbot } from "../composables/useChatbot";
+export { useAnimationManager } from "../composables/useAnimationManager";
+export {
+  useAudioAnalysis,
+  lipSyncStatus,
+} from "../composables/useAudioAnalysis";
+export { useAudioRecording } from "../composables/useAudioRecording";
+export { useAudioWebSocket } from "../composables/useAudioWebSocket";
+export { useCanvasOAuth } from "../composables/useCanvasOAuth";
+export { useContentKey } from "../composables/useContentKey";
+export { useConversationManager } from "../composables/useConversationManager";
 export { useCountdown } from "../composables/useCountdown";
+export { useDashboardData } from "../composables/useDashboardData";
+export { useEyeBlinking } from "../composables/useEyeBlinking";
+export { useLBWebSocket } from "../composables/useLBWebsocket";
+export { useLessonOverview } from "../composables/useLessonOverview";
+export { useModelLoader } from "../composables/useModelLoader";
+export { useMorphTargets } from "../composables/useMorphTargets";
+export { usePermissionManager } from "../composables/usePermissionManager";
 export { objToVec3 } from "../composables/usePos";
 export { useSTT } from "../composables/useSTT";
+export { useSTTManager } from "../composables/useSTTManager";
+export { useTTSAudioManager } from "../composables/useTTSAudioManager";
+export { useTweakpaneControls } from "../composables/useTweakpaneControls";
+export { useWaveform } from "../composables/useWaveform";
 export {
+  FREQUENCY_BANDS,
+  DEFAULT_AUDIO_CONFIG,
+  analyzeAudioData,
+  FrequencyBands,
+  AudioAnalysisResult,
+  AudioAnalysisConfig,
+} from "../utils/audioAnalysis";
+export {
+  isSafari,
+  isChrome,
+  isFirefox,
+  getBrowserInfo,
+} from "../utils/browserDetection";
+export {
+  SupportedLang,
+  CONVERSATION_ID,
+  ERROR_MESSAGES,
+  COMMON_ERROR_MESSAGES,
+  HTTP_ERROR_MESSAGES,
+  STT_ERROR_MESSAGES,
+  STT_CONFIG,
+  AUDIO_CONFIG,
+  WAVEFORM_CONFIG,
+  WEBSOCKET_CONFIG,
+  AUDIO_ANALYSIS_CONFIG,
+  WebSocketResponseEventType,
+  WebSocketEventType,
+  WebSocketTextRequestType,
+  WebSocketResponseType,
   AnimationStates,
   AvatarChildMeshNames,
+  facialExpressions,
   testResponseData,
+  MOUTH_TARGETS,
+  INTERPOLATION_SPEED,
+  BLINK_DURATION,
+  BLINK_PAUSE,
+  EYE_MORPH_TARGETS,
+  SOUND_TO_TARGETS,
+  LanguageModelMapping,
+  EyeMesh,
 } from "../utils/constants";
+export {
+  formatDateTime,
+  formatRelativeTime,
+  isToday,
+  isYesterday,
+  getLatestSubmissionDate,
+  getLatestSubmissionTimestamp,
+} from "../utils/dateUtils";
 export {
   resetDataLayer,
   bytesToBase64,
   decodeBase64Audio,
+  createApiHeaders,
   BackendAudioResponse,
 } from "../utils/index";
+export {
+  calculateTotalPracticeTime,
+  calculateStudentTotalPracticeTime,
+} from "../utils/timeUtils";
+export { useAppStore } from "../stores/appStore";
+export {
+  useMessageStore,
+  BotMessage,
+  UserMessage,
+} from "../stores/messageStore";
+export { useAudioStore } from "../stores/useAudioStore";
 export { useAvatarStore } from "../stores/useAvatarStore";
-export { TEMP_USER_NAME, useChatbotStore } from "../stores/useChatbotStore";
+export { useChatbotStore } from "../stores/useChatbotStore";
 export { useEnvironmentStore } from "../stores/useEnvironmentStore";
 export {
   defineStore,
@@ -248,5 +326,4 @@ export {
   useVideoTexture,
 } from "@tresjs/cientos";
 export { useEffect, useEffectPmndrs } from "@tresjs/post-processing";
-export { useNuxtDevTools } from "../node_modules/.pnpm/@nuxt+devtools@1.7.0_rollup@4.30.1_vite@6.0.7_@types+node@22.10.6_jiti@2.4.2_sass@1.83.1_ters_57oaua3iuxtfr7xidszojia5wm/node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools";
-export { definePageMeta } from "../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_kh3xpxlje7ewug3wzkeclehluq/node_modules/nuxt/dist/pages/runtime/composables";
+export { definePageMeta } from "../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/pages/runtime/composables";

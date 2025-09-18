@@ -7,6 +7,13 @@ export {};
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ICustomClose: typeof import('~icons/custom/close')['default']
+    ICustomErrorAlertIcon: typeof import('~icons/custom/error-alert-icon')['default']
+    'IFa6Solid:check': typeof import('~icons/fa6-solid/check')['default']
+    'IFa6Solid:chevronLeft': typeof import('~icons/fa6-solid/chevron-left')['default']
+    'IFa6Solid:circleCheck': typeof import('~icons/fa6-solid/circle-check')['default']
+    'IFa6Solid:gear': typeof import('~icons/fa6-solid/gear')['default']
+    'IFa6Solid:spinner': typeof import('~icons/fa6-solid/spinner')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
