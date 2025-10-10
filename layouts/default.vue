@@ -9,7 +9,7 @@
           <div class="d-flex justify-content-start align-items-start">
             <Tooltip
               :text="isFullscreen ? 'Exit full screen' : 'Full screen'"
-              position="right"
+              position="left"
               :x-offset="-13">
               <button class="expand-btn" @click="onMakeFullScreen">
                 <component
@@ -75,7 +75,6 @@ const onMakeFullScreen = async () => {
 header {
   position: absolute;
   top: 0;
-  left: 0;
   right: 0;
   z-index: 100;
   width: fit-content;
@@ -95,7 +94,7 @@ header {
   justify-content: center;
   position: absolute;
   top: 20px;
-  left: 20px;
+  right: 20px;
 }
 
 .expand-btn:focus,

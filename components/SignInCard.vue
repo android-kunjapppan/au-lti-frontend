@@ -88,16 +88,17 @@ defineEmits<{
 
 .sign-in-btn {
   padding: 10px 24px;
-  background: var(--rds-dark-2);
+  background: var(--rds-blue);
   color: var(--rds-light-1);
   transition: background-color 0.2s ease;
 }
 
 .sign-in-btn:hover {
-  background: var(--rds-dark-3);
+  background: var(--rds-blue-hover);
 }
 
 .sign-in-btn:active {
-  background: var(--rds-dark-3);
+  background: var(--rds-blue-hover);
+  color: var(--rds-light-1);
 }
 </style>
