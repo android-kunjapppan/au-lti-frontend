@@ -63,9 +63,9 @@ import {
 import { onUnmounted } from "vue";
 import { useLessonOverview } from "~/composables/useLessonOverview";
 import { useTTSAudioManager } from "~/composables/useTTSAudioManager";
-// definePageMeta({
-//   middleware: "conversation-auth",
-// });
+definePageMeta({
+  middleware: "conversation-auth",
+});
 const avatarStore = useAvatarStore();
 const { audioElement } = storeToRefs(avatarStore);
 const appStore = useAppStore();

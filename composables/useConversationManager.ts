@@ -4,8 +4,9 @@ import type {
   UserInfo,
 } from "~/types/types";
 import {
+  COMMON_ERROR_MESSAGES,
   WebSocketEventType,
-  WebSocketTextRequestType
+  WebSocketTextRequestType,
 } from "~/utils/constants";
 
 export const useConversationManager = () => {
@@ -132,10 +133,10 @@ export const useConversationManager = () => {
       // Ensure WebSocket connection
       await ensureWebSocketConnection();
       // Send conversation end request
-      // if (!appStore.lbCanvasJwt) {
-      //   appStore.addAlert(COMMON_ERROR_MESSAGES.NO_CANVAS_JWT);
-      //   throw new Error("No Canvas JWT found");
-      // }
+      if (!appStore.lbCanvasJwt) {
+        appStore.addAlert(COMMON_ERROR_MESSAGES.NO_CANVAS_JWT);
+        throw new Error("No Canvas JWT found");
+      }
 
       // Get selectedTemplate from sessionStorage
       const selectedTemplate = sessionStorage.getItem("selectedTemplate");
@@ -151,7 +152,7 @@ export const useConversationManager = () => {
         selectedTemplate,
         event_type: WebSocketEventType.EVENT_CONVERSATION_END,
         conversation_id: messageStore.getConversationId() as string,
-        lb_canvas_jwt: appStore.lbCanvasJwt || "abc",
+        lb_canvas_jwt: appStore.lbCanvasJwt,
       };
 
       appStore.sendWS(JSON.stringify(conversationEndRequest));
