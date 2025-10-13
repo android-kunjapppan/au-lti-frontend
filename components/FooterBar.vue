@@ -202,8 +202,8 @@ const handleSubmit = async () => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  background-color: var(--rds-white-bg);
-  color: var(--rds-dark-3);
+  background-color: var(--rds-blue);
+  color: var(--rds-white-bg);
   height: auto;
   z-index: var(--rds-z-index-footer);
 }
@@ -266,7 +266,7 @@ const handleSubmit = async () => {
   align-items: center;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--rds-dark-3);
+  color: var(--rds-white-bg);
   cursor: pointer;
   border-radius: 100px;
   padding: 10px 24px;
@@ -278,7 +278,8 @@ const handleSubmit = async () => {
 
 .setting-btn:hover,
 .setting-btn.active {
-  background-color: var(--btn-hover-bg);
+  background-color: var(--rds-secondary);
+  color: var(--rds-blue);
 }
 
 .setting-btn:focus,

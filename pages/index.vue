@@ -1,12 +1,12 @@
 <template>
   <NuxtLayout>
-    <LoadingSpinner
+    <!-- <LoadingSpinner
       v-if="
         isStartConversationLoading ||
         isLoadingUserInfo ||
         isLoadingLessonOverview ||
         !lessonOverview
-      " />
+      " /> -->
     <ContentContainer v-if="lessonOverview && !isLoadingLessonOverview">
       <!-- Left section -->
       <template #left>
@@ -81,14 +81,13 @@
 import { useAppStore } from "@/stores/appStore";
 import { useAvatarStore } from "@/stores/useAvatarStore";
 import ContentContainer from "~/components/ContentContainer.vue";
-import LoadingSpinner from "~/components/LoadingSpinner.vue";
 import { useCanvasOAuth } from "~/composables/useCanvasOAuth";
 import { useLessonOverview } from "~/composables/useLessonOverview";
 import { isCanvasOAuthError } from "~/utils/auth";
 
-definePageMeta({
-  middleware: "conversation-auth",
-});
+// definePageMeta({
+//   middleware: "conversation-auth",
+// });
 
 // Use the lesson overview composable
 const {

@@ -112,9 +112,9 @@ import successAnimation from "~/assets/animations/confetti.json?url";
 import LottieLooper from "~/components/LottieLooper.vue";
 const avatarStore = useAvatarStore();
 
-definePageMeta({
-  middleware: "conversation-auth",
-});
+// definePageMeta({
+//   middleware: "conversation-auth",
+// });
 const appStore = useAppStore();
 const messageStore = useMessageStore();
 const { lessonFeedback, isTest, isLoadingUserInfo, userInfo } =

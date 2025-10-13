@@ -4,12 +4,9 @@
     <div class="canvas-container overflow-hidden">
       <div class="d-flex h-100 w-100 flex-grow-1">
         <div class="content-area" :class="contentAreaClasses">
-          <Suspense>
-            <AvatarModel
-              class="h-100 w-auto position-absolute"
-              ref="avatarRef" />
-          </Suspense>
-          <div class="flex-grow-1 flex-spacer"></div>
+          <div class="avatar-model">
+            <img height="450px" width="auto" src="/avatar.png" alt="Loading" />
+          </div>
           <div
             class="left-suggestion-box"
             v-if="showSuggestionBox && !isChatbotDrawerOpen">
@@ -66,9 +63,9 @@ import {
 import { onUnmounted } from "vue";
 import { useLessonOverview } from "~/composables/useLessonOverview";
 import { useTTSAudioManager } from "~/composables/useTTSAudioManager";
-definePageMeta({
-  middleware: "conversation-auth",
-});
+// definePageMeta({
+//   middleware: "conversation-auth",
+// });
 const avatarStore = useAvatarStore();
 const { audioElement } = storeToRefs(avatarStore);
 const appStore = useAppStore();
@@ -345,6 +342,14 @@ onUnmounted(() => {
   pointer-events: auto;
   /* Fix scrolling issue */
   overflow: visible;
+}
+
+.avatar-model {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  margin-bottom: 30px;
 }
 
 .speaker-model-container {

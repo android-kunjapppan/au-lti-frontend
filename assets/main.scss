@@ -61,8 +61,8 @@ html {
   --rds-body-bg: var(--rds-light-1);
 
   /* Microphone button states */
-  --mic-inactive: rgba(101, 160, 27, 1);
-  --mic-active: rgba(255, 0, 0, 1);
+  --mic-inactive: var(--rds-blue);
+  --mic-active: var(--rds-red);
   --mic-disabled: rgb(112, 112, 112);
   --mic-retry-icon-size: 26px;
 
