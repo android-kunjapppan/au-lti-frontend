@@ -1,6 +1,9 @@
 <template>
   <div class="alert-message-container">
-    <transition-group name="alert-fade" tag="div">
+    <transition-group
+      name="alert-fade"
+      tag="div"
+      class="d-flex flex-column position-relative">
       <div v-for="msg in appStore.alertQueue" :key="msg.id" class="alert">
         <div class="alert-wrapper">
           <div class="d-flex align-items-start alert-content">
@@ -42,10 +45,13 @@ const appStore = useAppStore();
   border-width: 1px;
   box-shadow: 0px 4px 4px 0px var(--rds-alert-box-shadow);
   word-break: break-word;
-  transition: all 0.3s;
+  transition: all 0.3s ease-out;
   background-color: var(--dsl-alert-bg);
   border-color: var(--dsl-red);
   padding: 16px;
+  /* Ensure proper positioning for smooth movement */
+  position: relative;
+  will-change: transform;
 }
 
 .alert-wrapper {
@@ -104,9 +110,14 @@ const appStore = useAppStore();
   box-shadow: none;
 }
 
-.alert-fade-enter-active,
-.alert-fade-leave-active {
+.alert-fade-enter-active {
   transition: all 0.3s ease-out;
+}
+
+.alert-fade-leave-active {
+  transition: all 0.4s ease-in;
+  position: absolute;
+  width: 280px;
 }
 
 .alert-fade-enter-from,
@@ -115,7 +126,13 @@ const appStore = useAppStore();
   transform: translateX(100%);
 }
 
-.alert-fade-leave-active {
-  transition: all 0.6s ease-out;
+/* Smooth movement transition for remaining alerts when one is removed */
+.alert-fade-move {
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Ensure smooth positioning during movement */
+.alert-fade-move-active {
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 </style>

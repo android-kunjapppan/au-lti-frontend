@@ -70,39 +70,34 @@
   </div>
 </template>
 
-<script setup>
-import SortableTableHeader from "./SortableTableHeader.vue";
+<script setup lang="ts">
+import SortableTableHeader, {
+  type SortDirection,
+  type SortEventPayload,
+} from "./SortableTableHeader.vue";
 import StudentRow from "./StudentRow.vue";
 
-const props = defineProps({
-  students: {
-    type: Array,
-    required: true,
-  },
-  sortColumn: {
-    type: String,
-    default: null,
-  },
-  sortDirection: {
-    type: String,
-    default: "asc",
-  },
-  openStudentAccordion: {
-    type: Number,
-    default: null,
-  },
+interface Props {
+  students: ProcessedStudent[];
+  sortColumn?: string | null;
+  sortDirection?: SortDirection | null;
+  openStudentAccordion?: number | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  sortColumn: null,
+  sortDirection: "asc",
+  openStudentAccordion: null,
 });
 
-const emit = defineEmits([
-  "sort",
-  "toggle-accordion",
-  "show-assignment-details",
-]);
+const emit = defineEmits<{
+  sort: [payload: SortEventPayload];
+  "toggle-accordion": [index: number];
+  "show-assignment-details": [assignment: ProcessedAssignment];
+}>();
 
-const handleSort = (event) => {
-  const column = event.column;
-  const direction = event.direction;
-  emit("sort", { column, direction });
+const handleSort = (event: SortEventPayload) => {
+  emit("sort", event);
 };
 </script>
 

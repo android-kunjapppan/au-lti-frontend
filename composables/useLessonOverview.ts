@@ -1,52 +1,19 @@
 import { ref } from "vue";
 import type { LessonOverviewData } from "~/types/types";
 import { createApiHeaders } from "~/utils";
-import { SupportedLang } from "~/utils/constants";
+import { DEFAULT_REQUEST_TIMEOUT_LENGTH } from "~/utils/constants";
 
 export const useLessonOverview = () => {
+  const appStore = useAppStore();
+  const config = useRuntimeConfig();
   const isLoading = ref(false);
   const error = ref<string | null>(null);
   const lessonOverview = ref<LessonOverviewData | null>(null);
   let lessonOverviewTimeout: NodeJS.Timeout | null = null;
 
-  // Helper function to get lesson ID (default for now, will use /info details in future)
-  const getLessonId = (): number => {
-    // Default to lesson 1 - will be replaced with /info details in future
-    return 1;
-  };
-
-  // Helper function to get language from course data
-  const getLanguage = (): string => {
-    try {
-      const appStore = useAppStore();
-
-      if (appStore.userInfo?.assignmentInfo?.assignment?.course?.Language) {
-        const courseLanguage =
-          appStore.userInfo.assignmentInfo.assignment.course.Language;
-
-        // Map course language to supported language codes
-        if (courseLanguage.toLowerCase() === "spanish") {
-          return SupportedLang.SPANISH;
-        }
-
-        // For other languages, use first 2 characters
-        return courseLanguage.substring(0, 2).toLowerCase();
-      }
-    } catch (error) {
-      console.warn("Could not get language from course data:", error);
-    }
-
-    // Default to English if no course language found
-    return "en";
-  };
-
-  const fetchLessonOverview = async (
-    lessonId?: number
-  ): Promise<LessonOverviewData | null> => {
-    const targetLessonId = lessonId || getLessonId();
-
-    if (!targetLessonId) {
-      error.value = "No lesson ID provided";
+  const fetchLessonOverview = async (): Promise<LessonOverviewData | null> => {
+    if (!appStore.selectedTemplate) {
+      error.value = "Missing template id";
       return null;
     }
     if (isLoading.value) return lessonOverview.value;
@@ -56,17 +23,11 @@ export const useLessonOverview = () => {
       error.value = null;
 
       // Set 2-minute timeout
-      lessonOverviewTimeout = setTimeout(
-        () => {
-          isLoading.value = false;
-          error.value =
-            "Loading lesson overview timed out. Please refresh the page.";
-        },
-        2 * 60 * 1000
-      );
-
-      const config = useRuntimeConfig();
-      const appStore = useAppStore();
+      lessonOverviewTimeout = setTimeout(() => {
+        isLoading.value = false;
+        error.value =
+          "Loading lesson overview timed out. Please refresh the page.";
+      }, DEFAULT_REQUEST_TIMEOUT_LENGTH);
 
       // Get authentication headers
       const headers = createApiHeaders();
@@ -74,9 +35,8 @@ export const useLessonOverview = () => {
         headers.Authorization = `Bearer ${appStore.lbCanvasJwt}`;
       }
 
-      const language = getLanguage();
       const response = await fetch(
-        `${config.public.httpApiUrl}/lesson-overview?language=${language}&lessonId=${targetLessonId}`,
+        `${config.public.httpApiUrl}/lesson-overview?lessonId=${appStore.selectedTemplate}`,
         {
           method: "GET",
           headers,
@@ -116,7 +76,5 @@ export const useLessonOverview = () => {
     isLoading: readonly(isLoading),
     error: readonly(error),
     fetchLessonOverview,
-    getLessonId,
-    getLanguage,
   };
 };

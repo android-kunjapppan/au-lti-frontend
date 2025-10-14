@@ -33,24 +33,27 @@
     <div class="col-md-4 mb-space-xs">
       <StudentStatsCard
         title="Last Submission"
-        :value="formatDate(currentStudent?.lastSubmission) || 'N/A'"
+        :value="
+          currentStudent ? formatDate(currentStudent?.lastSubmission) : 'N/A'
+        "
         color="secondary" />
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { formatDateTime } from "~/utils/dateUtils";
 import StudentStatsCard from "./StudentStatsCard.vue";
 
-defineProps({
-  currentStudent: {
-    type: Object,
-    default: null,
-  },
+interface Props {
+  currentStudent?: ProcessedStudent | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  currentStudent: null,
 });
 
-function formatDate(dateString) {
+function formatDate(dateString: string) {
   if (dateString === "N/A") return "N/A";
   const date = new Date(dateString);
   return formatDateTime(date);

@@ -1,10 +1,18 @@
-import { StorageSerializers, useStorage } from "@vueuse/core";
+import { StorageSerializers, useStorage, watchDebounced } from "@vueuse/core";
 import { defineStore } from "pinia";
 import type { useMessageStore } from "~/stores/messageStore";
-import type { UserInfo } from "~/types/types";
-import { createApiHeaders } from "~/utils";
-import { getUserIdFromJWT } from "~/utils/auth";
-import { COMMON_ERROR_MESSAGES, HTTP_ERROR_MESSAGES } from "~/utils/constants";
+import type { LessonFeedback, UserInfo } from "~/types/types";
+import { createApiHeaders, promiseTimeout } from "~/utils";
+import {
+  getUserIdFromJWT,
+  isCanvasJWTValid,
+  isCanvasOAuthError,
+} from "~/utils/auth";
+import {
+  COMMON_ERROR_MESSAGES,
+  DEFAULT_REQUEST_TIMEOUT_LENGTH,
+  HTTP_ERROR_MESSAGES,
+} from "~/utils/constants";
 
 interface AlertMessage {
   id: string;
@@ -17,6 +25,12 @@ export const useAppStore = defineStore("frontend", () => {
   const speedOptions = [0.5, 0.6, 0.7, 0.8, 0.9]; // Only slow speed options
   const alertQueue = ref<AlertMessage[]>([]);
   const alertTimeouts = ref<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Flag to track when specific actions are being performed to prevent generic websocket errors
+  const websocketRequestInProgress = ref(false);
+
+  // Track the last time a websocket request was made
+  const lastWebsocketRequestTime = ref<number | null>(null);
 
   // The selected Module Template UUID
   const selectedTemplate = useStorage<string | null>(
@@ -98,6 +112,7 @@ export const useAppStore = defineStore("frontend", () => {
     trackTTSRequest,
     clearTTSRequest,
     clearAllTTSRequests,
+    setCurrentBotMessageId,
     ttsRequestMessageIds,
   } = useLBWebSocket(lbJwt);
 
@@ -112,7 +127,23 @@ export const useAppStore = defineStore("frontend", () => {
   };
 
   // Function to add a new alert message
-  const addAlert = (text: string) => {
+  const addAlert = async (text: string) => {
+    // Add a 0.5 second delay before showing the alert
+    await promiseTimeout(500);
+
+    // If we already have 4 alerts, remove the first (oldest) one
+    if (alertQueue.value.length >= 4) {
+      const firstAlert = alertQueue.value.shift(); // Remove first element
+      if (firstAlert) {
+        // Clear the timeout for the removed alert
+        const timeout = alertTimeouts.value.get(firstAlert.id);
+        if (timeout) {
+          clearTimeout(timeout);
+          alertTimeouts.value.delete(firstAlert.id);
+        }
+      }
+    }
+
     const id = crypto.randomUUID();
     const message: AlertMessage = {
       id,
@@ -149,10 +180,7 @@ export const useAppStore = defineStore("frontend", () => {
     onWebSocketStatus: () => statusWS.value,
   });
 
-  const lessonFeedback = useStorage<{
-    whatWentWell: string[];
-    suggestionsForImprovement: string[];
-  }>(
+  const lessonFeedback = useStorage<LessonFeedback>(
     "lesson-feedback",
     {
       whatWentWell: [],
@@ -170,12 +198,8 @@ export const useAppStore = defineStore("frontend", () => {
     return userInfo.value?.assignmentInfo?.isTest;
   });
 
-  const updateLessonFeedback = (
-    whatWentWell: string[],
-    suggestionsForImprovement: string[]
-  ) => {
-    lessonFeedback.value.whatWentWell = whatWentWell;
-    lessonFeedback.value.suggestionsForImprovement = suggestionsForImprovement;
+  const updateLessonFeedback = (feedback: LessonFeedback) => {
+    lessonFeedback.value = feedback;
   };
 
   const clearLessonFeedback = () => {
@@ -222,15 +246,12 @@ export const useAppStore = defineStore("frontend", () => {
         isLoadingUserInfo.value = true;
 
         // Set 2-minute timeout
-        userInfoTimeout = setTimeout(
-          () => {
-            isLoadingUserInfo.value = false;
-            addAlert(
-              "Loading user information timed out. Please refresh the page."
-            );
-          },
-          2 * 60 * 1000
-        );
+        userInfoTimeout = setTimeout(() => {
+          isLoadingUserInfo.value = false;
+          addAlert(
+            "Loading user information timed out. Please refresh the page."
+          );
+        }, DEFAULT_REQUEST_TIMEOUT_LENGTH);
         const config = useRuntimeConfig();
         const response = await fetch(`${config.public.httpApiUrl}/lti/info`, {
           method: "POST",
@@ -310,6 +331,26 @@ export const useAppStore = defineStore("frontend", () => {
     return fetchUserInfoPromise;
   };
 
+  async function fetchUserInfoWithOAuth() {
+    try {
+      await fetchUserInfo(); // Try to fetch user info
+    } catch (error: unknown) {
+      const isOAuthRequired =
+        error instanceof Error &&
+        (error.message === "Canvas OAuth Required" ||
+          (isCanvasOAuthError(error) &&
+            error.response?.status === 401 &&
+            error.response?.data?.code === "CANVAS_OAUTH_REQUIRED"));
+
+      if (isOAuthRequired) {
+        console.log("OAuth required on mount – skipping popup");
+        return; // Don't show popup on mount
+      } else {
+        throw error; // Any other error, throw as usual
+      }
+    }
+  }
+
   const setUserInfo = async (userData: UserInfo | null) => {
     userInfo.value = userData;
   };
@@ -358,9 +399,39 @@ export const useAppStore = defineStore("frontend", () => {
     return conversationId;
   };
 
+  const getLtiKey = async () => {
+    const ltik = lbCanvasJwt.value;
+    if (!ltik || isCanvasJWTValid(lbCanvasJwt.value) === false)
+      await navigateTo("timeout");
+    return ltik;
+  };
+
+  // Functions to manage specific action flag
+  const setWebsocketRequestInProgress = (inProgress: boolean) => {
+    websocketRequestInProgress.value = inProgress;
+    if (inProgress) {
+      lastWebsocketRequestTime.value = Date.now();
+    }
+  };
+
+  // Debounced watcher to automatically reset websocket request state after 2 seconds of inactivity
+  watchDebounced(
+    lastWebsocketRequestTime,
+    (newTime) => {
+      if (newTime && websocketRequestInProgress.value) {
+        const timeSinceLastRequest = Date.now() - newTime;
+        if (timeSinceLastRequest >= 2000) {
+          websocketRequestInProgress.value = false;
+        }
+      }
+    },
+    { debounce: 2000 }
+  );
+
   return {
     lbJwt,
     lbCanvasJwt,
+    selectedTemplate,
     assignmentId,
     courseId,
     userInfo,
@@ -373,6 +444,8 @@ export const useAppStore = defineStore("frontend", () => {
     footerHeading,
     footerSubheading,
     speedOptions,
+    websocketRequestInProgress,
+    setWebsocketRequestInProgress,
     audioPlaybackSpeed,
     toggleSettings,
     selectAudioPlaybackSpeed,
@@ -388,6 +461,7 @@ export const useAppStore = defineStore("frontend", () => {
     statusWS,
     sendWS,
     closeWS,
+    setCurrentBotMessageId,
     trackTTSRequest,
     clearTTSRequest,
     clearAllTTSRequests,
@@ -416,5 +490,7 @@ export const useAppStore = defineStore("frontend", () => {
     getConversationId,
     avatarName,
     setAvatarName,
+    fetchUserInfoWithOAuth,
+    getLtiKey,
   };
 });

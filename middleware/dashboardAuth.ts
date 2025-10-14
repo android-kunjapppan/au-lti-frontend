@@ -9,13 +9,12 @@ export default defineNuxtRouteMiddleware((to, from) => {
   // Save the LTI token if present in URL query param
   if (to.query["ltik"] && typeof to.query["ltik"] === "string") {
     appStoreRef.lbCanvasJwt.value = to.query["ltik"];
+    delete to.query["ltik"];
+    return navigateTo(to);
   }
 
   // Validate the Canvas LTI JWT
   if (!isCanvasJWTValid(appStoreRef.lbCanvasJwt.value)) {
-    // Instead of redirecting to an error page, just throwing an error for now
-    throw new Error(
-      "Invalid or expired LTI token. Please re-launch the LTI tool from Canvas."
-    );
+    return navigateTo("/timeout");
   }
 });

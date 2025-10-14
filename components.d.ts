@@ -7,13 +7,28 @@ export {};
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ICustomBlacklightbulb: typeof import('~icons/custom/blacklightbulb')['default']
     ICustomClose: typeof import('~icons/custom/close')['default']
+    ICustomComment: typeof import('~icons/custom/comment')['default']
     ICustomErrorAlertIcon: typeof import('~icons/custom/error-alert-icon')['default']
+    ICustomLanguage: typeof import('~icons/custom/language')['default']
+    ICustomLightbulbOn: typeof import('~icons/custom/lightbulb-on')['default']
+    ICustomNewlightbulb: typeof import('~icons/custom/newlightbulb')['default']
+    ICustomStop: typeof import('~icons/custom/stop')['default']
+    ICustomTranscribeIcon: typeof import('~icons/custom/transcribe-icon')['default']
+    ICustomTurtle: typeof import('~icons/custom/turtle')['default']
+    ICustomVolume: typeof import('~icons/custom/volume')['default']
+    'IFa6Solid:arrowRotateRight': typeof import('~icons/fa6-solid/arrow-rotate-right')['default']
     'IFa6Solid:check': typeof import('~icons/fa6-solid/check')['default']
     'IFa6Solid:chevronLeft': typeof import('~icons/fa6-solid/chevron-left')['default']
+    'IFa6Solid:chevronRight': typeof import('~icons/fa6-solid/chevron-right')['default']
     'IFa6Solid:circleCheck': typeof import('~icons/fa6-solid/circle-check')['default']
+    'IFa6Solid:comments': typeof import('~icons/fa6-solid/comments')['default']
     'IFa6Solid:gear': typeof import('~icons/fa6-solid/gear')['default']
+    'IFa6Solid:microphone': typeof import('~icons/fa6-solid/microphone')['default']
     'IFa6Solid:spinner': typeof import('~icons/fa6-solid/spinner')['default']
+    'IFa6Solid:stop': typeof import('~icons/fa6-solid/stop')['default']
+    'IFa6Solid:xmark': typeof import('~icons/fa6-solid/xmark')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

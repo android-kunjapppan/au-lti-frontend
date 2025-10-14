@@ -55,6 +55,20 @@ function handleClick() {
   props.onClick?.();
 }
 
+// Function to reset the active state (called from parent components)
+const resetActiveState = () => {
+  isActive.value = false;
+  if (resetTimer) {
+    clearTimeout(resetTimer);
+    resetTimer = null;
+  }
+};
+
+// Expose the resetActiveState function to parent components
+defineExpose({
+  resetActiveState,
+});
+
 onBeforeUnmount(() => {
   if (resetTimer) clearTimeout(resetTimer);
 });

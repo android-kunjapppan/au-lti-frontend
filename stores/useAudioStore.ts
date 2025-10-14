@@ -130,15 +130,27 @@ export const useAudioStore = defineStore("audio", () => {
         };
 
         request.onerror = () => {
-          console.error(
-            `❌ Failed to save audio to IndexedDB for message ${messageId}:`,
-            request.error
+          const errorMsg = `Failed to save audio to IndexedDB for message ${messageId}`;
+          console.error(`❌ ${errorMsg}:`, request.error);
+
+          // Add user alert for IndexedDB save failures
+          const appStore = useAppStore();
+          appStore.addAlert(
+            "Failed to save audio data. Audio may not be available for replay."
           );
+
           reject(request.error);
         };
       });
     } catch (error) {
       console.error("❌ Error saving audio to IndexedDB:", error);
+
+      // Add user alert for general IndexedDB errors
+      const appStore = useAppStore();
+      appStore.addAlert(
+        "Failed to save audio data. Audio may not be available for replay."
+      );
+
       return false;
     }
   };
@@ -329,27 +341,6 @@ export const useAudioStore = defineStore("audio", () => {
     }
   };
 
-  // Migrate audio from sessionStorage to IndexedDB
-  const migrateSessionStorageAudio = async (
-    messageId: string,
-    audioJson: string
-  ): Promise<boolean> => {
-    try {
-      const audioData = JSON.parse(audioJson);
-      const saved = await saveAudioToIndexedDB(messageId, audioData);
-      if (saved) {
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error(
-        `❌ Failed to migrate audio for message ${messageId}:`,
-        error
-      );
-      return false;
-    }
-  };
-
   // Initialize the store
   const init = async () => {
     await initIndexedDB();
@@ -364,7 +355,6 @@ export const useAudioStore = defineStore("audio", () => {
     loadAudioByContent,
     hasAudio,
     cleanupOldAudio,
-    migrateSessionStorageAudio,
     addToRecentMessages,
     isRecentMessage,
   };

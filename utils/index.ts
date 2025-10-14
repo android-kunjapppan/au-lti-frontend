@@ -42,17 +42,58 @@ export const decodeBase64Audio = async (args: {
   if (audioBufferArray == undefined || audioContext == undefined)
     throw new Error("missing string or audio context");
   try {
-    // turing the Base64bytes to Base64
+    // Ensure AudioContext is running before decoding (Safari-specific)
+    if (audioContext.state === "suspended") {
+      console.log(
+        "🎵 AudioContext suspended, attempting to resume before decoding..."
+      );
+      await audioContext.resume();
+    }
+
+    // Convert Base64bytes to Base64
     const base64bytes = bytesToBase64(audioBufferArray.data);
     const binaryString = atob(base64bytes);
     const len = binaryString.length;
     const bytes = new Uint8Array(len);
+
     for (let i = 0; i < len; i++) {
       bytes[i] = binaryString.charCodeAt(i);
     }
-    return audioContext.decodeAudioData(bytes.buffer);
+
+    // Safari-specific: Ensure proper buffer alignment
+    const buffer = isSafari() ? bytes.buffer.slice(0) : bytes.buffer;
+
+    return await audioContext.decodeAudioData(buffer);
   } catch (error) {
     console.error("Error decoding base64 audio:", error);
+
+    // Safari fallback: Try alternative buffer preparation
+    if (isSafari()) {
+      try {
+        console.log("🎵 Attempting Safari fallback audio decoding...");
+        const base64String = bytesToBase64(audioBufferArray.data);
+        const binaryString = atob(base64String);
+        const audioBytes = new Uint8Array(binaryString.length);
+
+        for (let i = 0; i < binaryString.length; i++) {
+          audioBytes[i] = binaryString.charCodeAt(i);
+        }
+
+        // Create a new buffer with proper byte alignment for Safari
+        const buffer = new ArrayBuffer(audioBytes.length);
+        const view = new Uint8Array(buffer);
+        view.set(audioBytes);
+
+        return await audioContext.decodeAudioData(buffer);
+      } catch (fallbackError) {
+        console.error(
+          "Safari fallback audio decoding also failed:",
+          fallbackError
+        );
+        return null;
+      }
+    }
+
     return null;
   }
 };
@@ -71,3 +112,12 @@ export const createApiHeaders = (
 
   return headers;
 };
+
+/**
+ * Creates a promise that resolves after the specified delay
+ * @param ms - The delay in milliseconds
+ * @returns A promise that resolves after the delay
+ */
+export function promiseTimeout(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

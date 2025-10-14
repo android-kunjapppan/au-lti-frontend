@@ -24,29 +24,28 @@
   </th>
 </template>
 
-<script setup>
-const props = defineProps({
-  column: {
-    type: String,
-    required: true,
-  },
-  label: {
-    type: String,
-    required: true,
-  },
-  sortColumn: {
-    type: String,
-    default: null,
-  },
-  sortDirection: {
-    type: String,
-    default: "asc",
-  },
+<script setup lang="ts">
+export type SortDirection = "asc" | "desc";
+export interface SortEventPayload {
+  column: null | string;
+  direction: null | SortDirection;
+}
+
+interface Props {
+  column: string;
+  label: string;
+  sortColumn?: string | null;
+  sortDirection?: SortDirection | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  sortColumn: null,
+  sortDirection: "asc",
 });
 
-const emit = defineEmits(["sort"]);
+const emit = defineEmits<{ sort: [payload: SortEventPayload] }>();
 
-const handleSortClick = (event) => {
+const handleSortClick = (event: Event) => {
   // Prevent default focus behavior
   event.preventDefault();
 

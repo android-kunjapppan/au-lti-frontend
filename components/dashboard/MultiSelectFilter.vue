@@ -47,33 +47,33 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts" generic="T extends FilterItem[]">
 import { computed, ref } from "vue";
 import SearchComponent from "./SearchComponent.vue";
 
-const props = defineProps({
-  items: {
-    type: Array,
-    required: true,
-  },
-  modelValue: {
-    type: Array,
-    required: true,
-  },
-  placeholder: {
-    type: String,
-    default: "Search...",
-  },
+export interface FilterItem {
+  id: string;
+  title: string;
+  [key: string]: boolean | string | number;
+}
+
+interface Props {
+  items: T;
+  placeholder?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  placeholder: "Search...",
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const modelValue = defineModel<string[]>({ default: [] });
 
 const search = ref("");
 
 // Computed property to determine Select All checkbox state
 const selectAllState = computed(() => {
   const filteredIds = filteredItems.value.map((item) => item.id);
-  const selectedFilteredIds = props.modelValue.filter((id) =>
+  const selectedFilteredIds = modelValue.value.filter((id) =>
     filteredIds.includes(id)
   );
 
@@ -92,19 +92,20 @@ const filteredItems = computed(() => {
   return props.items.filter(
     (item) =>
       item.title.toLowerCase().includes(s) ||
-      (item.studentName && item.studentName.toLowerCase().includes(s))
+      (item.studentName &&
+        item.studentName.toString().toLowerCase().includes(s))
   );
 });
 
-function toggleItem(id) {
-  const selected = [...props.modelValue];
+function toggleItem(id: string) {
+  const selected = [...modelValue.value];
   const idx = selected.indexOf(id);
   if (idx === -1) {
     selected.push(id);
   } else {
     selected.splice(idx, 1);
   }
-  emit("update:modelValue", selected);
+  modelValue.value = selected;
 }
 
 function handleSelectAll() {
@@ -119,25 +120,22 @@ function handleSelectAll() {
 
 function selectAll() {
   const allIds = filteredItems.value.map((item) => item.id);
-  const unique = Array.from(new Set([...props.modelValue, ...allIds]));
-  emit("update:modelValue", unique);
+  modelValue.value = Array.from(new Set([...modelValue.value, ...allIds]));
 }
 
 function clearAll() {
   const filteredIds = filteredItems.value.map((item) => item.id);
-  const remaining = props.modelValue.filter((id) => !filteredIds.includes(id));
-  emit("update:modelValue", remaining);
+  modelValue.value = modelValue.value.filter((id) => !filteredIds.includes(id));
 }
 
 function clearAllFiltered() {
   const filteredIds = filteredItems.value.map((item) => item.id);
-  const remaining = props.modelValue.filter((id) => !filteredIds.includes(id));
-  emit("update:modelValue", remaining);
+  modelValue.value = modelValue.value.filter((id) => !filteredIds.includes(id));
 }
 
 // Method to clear all selected items (for external use)
 function clearAllSelected() {
-  emit("update:modelValue", []);
+  modelValue.value = [];
 }
 
 // Expose methods for external use

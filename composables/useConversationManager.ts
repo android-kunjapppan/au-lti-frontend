@@ -5,6 +5,7 @@ import type {
 } from "~/types/types";
 import {
   COMMON_ERROR_MESSAGES,
+  DEFAULT_REQUEST_TIMEOUT_LENGTH,
   WebSocketEventType,
   WebSocketTextRequestType,
 } from "~/utils/constants";
@@ -24,15 +25,10 @@ export const useConversationManager = () => {
       isStartConversationLoading.value = true;
 
       // Set 2-minute timeout
-      startConversationTimeout = setTimeout(
-        () => {
-          isStartConversationLoading.value = false;
-          appStore.addAlert(
-            "Starting conversation timed out. Please try again."
-          );
-        },
-        2 * 60 * 1000
-      );
+      startConversationTimeout = setTimeout(() => {
+        isStartConversationLoading.value = false;
+        appStore.addAlert("Starting conversation timed out. Please try again.");
+      }, DEFAULT_REQUEST_TIMEOUT_LENGTH);
 
       // Clear any previous lesson feedback
       appStore.clearLessonFeedback();
@@ -45,6 +41,19 @@ export const useConversationManager = () => {
         if (lastConversation) {
           // Set the conversation ID from the last submitted conversation
           messageStore.setConversationId(lastConversation.conversation_id);
+
+          // Set the minimum required pairs and max pairs from assignment info for progress tracking
+          const minPairsRequired =
+            userData.assignmentInfo?.assignment?.MinPairsRequired;
+          const maxPairs = userData.assignmentInfo?.assignment?.MaxPairs;
+
+          if (minPairsRequired) {
+            messageStore.setMinRequiredPair(minPairsRequired);
+          }
+
+          if (maxPairs) {
+            messageStore.setMaxResponsePair(maxPairs);
+          }
 
           // Clear existing messages and load the last submitted conversation
           messageStore.clearMessages();
@@ -64,6 +73,8 @@ export const useConversationManager = () => {
                 id: messageId,
                 data: {
                   text: msg.text,
+                  isComplete: true,
+                  audio: "stored", // Mark audio as stored for loaded messages
                 },
               });
             }
@@ -78,9 +89,8 @@ export const useConversationManager = () => {
       // Ensure WebSocket connection
       await ensureWebSocketConnection();
 
-      // Get selectedTemplate from sessionStorage
-      const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-      if (!selectedTemplate) {
+      // Get selectedTemplate
+      if (!appStore.selectedTemplate) {
         appStore.addAlert(
           "Missing selectedTemplate, please reload or try again"
         );
@@ -92,7 +102,7 @@ export const useConversationManager = () => {
         user_id: userData.userId,
         event_type: WebSocketEventType.EVENT_CONVERSATION_START,
         assignment_id: userData.assignmentId,
-        selectedTemplate,
+        selectedTemplate: appStore.selectedTemplate,
         data: {
           request_type: WebSocketTextRequestType.START_CONVERSATION,
         },
@@ -123,13 +133,10 @@ export const useConversationManager = () => {
       isEndConversationLoading.value = true;
 
       // Set 2-minute timeout
-      endConversationTimeout = setTimeout(
-        () => {
-          isEndConversationLoading.value = false;
-          appStore.addAlert("Ending conversation timed out. Please try again.");
-        },
-        2 * 60 * 1000
-      );
+      endConversationTimeout = setTimeout(() => {
+        isEndConversationLoading.value = false;
+        appStore.addAlert("Ending conversation timed out. Please try again.");
+      }, DEFAULT_REQUEST_TIMEOUT_LENGTH);
       // Ensure WebSocket connection
       await ensureWebSocketConnection();
       // Send conversation end request
@@ -138,9 +145,8 @@ export const useConversationManager = () => {
         throw new Error("No Canvas JWT found");
       }
 
-      // Get selectedTemplate from sessionStorage
-      const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-      if (!selectedTemplate) {
+      // Get selectedTemplate
+      if (!appStore.selectedTemplate) {
         appStore.addAlert(
           "Missing selectedTemplate, please reload or try again"
         );
@@ -149,7 +155,7 @@ export const useConversationManager = () => {
 
       const conversationEndRequest: ConversationEndRequestBody = {
         user_id: appStore.getUserId(),
-        selectedTemplate,
+        selectedTemplate: appStore.selectedTemplate,
         event_type: WebSocketEventType.EVENT_CONVERSATION_END,
         conversation_id: messageStore.getConversationId() as string,
         lb_canvas_jwt: appStore.lbCanvasJwt,

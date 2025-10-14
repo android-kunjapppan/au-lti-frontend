@@ -45,6 +45,8 @@ export const useSTTManager = ({
   const wasManuallyStopped = shallowRef(false);
   const messageSent = shallowRef(false); // Flag to prevent STT updates after message is sent
   const isProcessingInBackground = shallowRef(false); // Flag to track background STT processing
+  const browserTimeoutId = ref<NodeJS.Timeout | null>(null); // Timeout to handle browser STT timeout
+  const currentUserMessageId = shallowRef<string | null>(null); // Track the current user message ID for audio linking
 
   // STT composable
   const {
@@ -64,6 +66,7 @@ export const useSTTManager = ({
   // Use centralized constants
   const SILENCE_THRESHOLD = STT_CONFIG.SILENCE_THRESHOLD;
   const MAX_CONSECUTIVE_ERRORS = STT_CONFIG.MAX_CONSECUTIVE_ERRORS;
+  const BROWSER_TIMEOUT_MS = STT_CONFIG.BROWSER_TIMEOUT_MS;
 
   // Use error messages from constants
   const ERROR_MESSAGES = STT_ERROR_MESSAGES;
@@ -92,6 +95,34 @@ export const useSTTManager = ({
     isAutoStopping.value = false;
   };
 
+  // Browser timeout management
+  const clearBrowserTimeout = () => {
+    if (browserTimeoutId.value) {
+      clearTimeout(browserTimeoutId.value);
+      browserTimeoutId.value = null;
+    }
+  };
+
+  const setBrowserTimeout = () => {
+    clearBrowserTimeout();
+    browserTimeoutId.value = setTimeout(async () => {
+      // Browser timeout reached - force stop STT and submit if there's text
+      if (
+        sttListening.value &&
+        hasValidText.value &&
+        !wasManuallyStopped.value
+      ) {
+        await stopStt();
+        // The watcher will handle the submission since wasManuallyStopped is false
+        // messageSent flag will prevent auto-restart after submission
+      } else if (sttListening.value) {
+        // Browser timeout reached but no valid text - just stop STT
+        await stopStt();
+        // messageSent flag will prevent auto-restart
+      }
+    }, BROWSER_TIMEOUT_MS);
+  };
+
   // Error handling
   const handleSttError = async (error: { error: string }) => {
     console.error("STT Error:", error);
@@ -103,10 +134,6 @@ export const useSTTManager = ({
       return;
     }
 
-    const errorMessage =
-      ERROR_MESSAGES[error.error as keyof typeof ERROR_MESSAGES] ||
-      `Speech recognition error: ${error.error}. Please try again.`;
-    addAlert(errorMessage);
     isWaitingForSttCompletion.value = false;
 
     // Clear STT text buffer on any error to prevent accumulation
@@ -119,9 +146,19 @@ export const useSTTManager = ({
     // Stop STT for specific errors that indicate the session should end
     if (error.error === "no-speech" || error.error === "network") {
       try {
+        clearBrowserTimeout(); // Clear browser timeout on error
         await stopStt();
         // Call audio cleanup callback to ensure audio recording is also stopped
         onAudioCleanup?.();
+
+        // For no-speech errors, don't show user alert as it's often a race condition
+        if (error.error === "no-speech") {
+          console.warn(
+            "No speech detected - likely due to browser timeout race condition"
+          );
+          // Don't show alert to user for no-speech errors
+          return;
+        }
       } catch (stopError) {
         console.error("Failed to stop STT after error:", stopError);
       }
@@ -147,7 +184,7 @@ export const useSTTManager = ({
   const handleSttMessage = async () => {
     if (!onWebSocketStatus || !onWebSocketOpen || !onWebSocketSend) {
       addAlert("WebSocket functions not provided to STT manager");
-      return;
+      return false;
     }
 
     if (onWebSocketStatus() !== "OPEN") {
@@ -163,31 +200,42 @@ export const useSTTManager = ({
         const conversationId = messageStore.getConversationId();
         if (!conversationId) {
           addAlert("No active conversation. Please start a lesson first.");
-          return;
+          return false;
         }
 
         const userMessageId = messageStore.createMessage("user", {
           data: { text: textStorage.value },
         });
 
+        // Store the current user message ID for audio linking
+        currentUserMessageId.value = userMessageId;
+
         // Create initial bot message with loading state
         const botMessageId = messageStore.createMessage("bot", {
           data: {
             text: "",
             isComplete: false,
+            isLoading: true,
           },
         });
 
         // Set loading state with timeout
         messageStore.setMessageLoading(botMessageId, true);
 
-        // Get selectedTemplate from sessionStorage
-        const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-        if (!selectedTemplate) {
+        // Set the current bot message ID in the WebSocket composable
+        // This ensures that finalizeBotMessage uses the correct bot message ID
+        // Only set if there isn't already a bot response in progress (prevent race condition)
+        if (!messageStore.isBotResponding) {
+          appStore.setCurrentBotMessageId(botMessageId);
+        }
+
+        // Get selectedTemplate
+
+        if (!appStore.selectedTemplate) {
           appStore.addAlert(
             "Missing selectedTemplate, please reload or try again"
           );
-          return;
+          return false;
         }
 
         onWebSocketSend(
@@ -196,7 +244,7 @@ export const useSTTManager = ({
             user_id: userId,
             conversation_id: conversationId,
             message_id: userMessageId,
-            selectedTemplate,
+            selectedTemplate: appStore.selectedTemplate,
             data: {
               request_type: WebSocketTextRequestType.USER_TEXT,
               text: textStorage.value,
@@ -209,17 +257,24 @@ export const useSTTManager = ({
         // Clear text storage immediately after sending message
         textStorage.value = "";
         messageSent.value = true; // Set flag to prevent further STT updates
+        return true; // Indicate success
       } catch (error) {
+        console.error("Failed to send text message:", error);
         addAlert("Failed to send transcribed message. Please try again.");
         // Clear text storage on error to prevent accumulation
         textStorage.value = "";
+        currentUserMessageId.value = null;
+        return false;
       }
     } else {
-      addAlert(
-        "Connection is not available. Please check your connection and try again."
-      );
-      // Clear text storage when connection is not available
+      if (onWebSocketStatus() !== "OPEN") {
+        addAlert(
+          "Connection is not available. Please check your connection and try again."
+        );
+      }
+      // Clear text storage when connection is not available or no valid text
       textStorage.value = "";
+      return false;
     }
   };
 
@@ -229,24 +284,46 @@ export const useSTTManager = ({
       try {
         wasManuallyStopped.value = true;
         isProcessingInBackground.value = true; // Start background processing
+        clearBrowserTimeout(); // Clear browser timeout since user manually stopped
 
-        // Stop STT immediately to prevent new input
+        // Immediately stop audio recording to prevent further recording
+        onAudioCleanup?.();
+
+        // Stop STT gracefully - wait for final transcription
         await stopStt();
+        // Now set messageSent to prevent auto-restart after we've received the final transcript
+        messageSent.value = true;
 
-        // Wait a bit for any pending results to be processed
+        // Small delay to ensure the watcher processes the final result
         setTimeout(async () => {
           if (isProcessingInBackground.value && hasValidText.value) {
             // Process the existing text and send message
             isProcessingInBackground.value = false;
             await handleSttMessage();
+          } else if (
+            isProcessingInBackground.value &&
+            hasSpeechBeenDetected.value
+          ) {
+            // Speech was detected but no text yet - wait a bit more
+            setTimeout(async () => {
+              if (isProcessingInBackground.value && hasValidText.value) {
+                isProcessingInBackground.value = false;
+                await handleSttMessage();
+              } else {
+                isProcessingInBackground.value = false;
+                messageSent.value = false; // Reset if no message was sent
+              }
+            }, 500); // Extended wait for slow final results
           } else if (isProcessingInBackground.value) {
             // No valid text, just reset the state
             isProcessingInBackground.value = false;
+            messageSent.value = false; // Reset if no message was sent
           }
-        }, 1000); // Wait 1 second for final results
+        }, 200); // Reduced from 500ms since stop() now handles waiting properly
       } catch (error) {
         addAlert("Failed to stop speech recognition. Please try again.");
         isProcessingInBackground.value = false; // Reset on error
+        messageSent.value = false; // Reset on error
       }
       return;
     }
@@ -269,6 +346,9 @@ export const useSTTManager = ({
         addAlert(
           "Microphone permission denied. Please allow microphone access and try again."
         );
+      } else if (errorMessage.includes("recognition has already started")) {
+        console.warn("STT already started, ignoring duplicate start attempt");
+        // Don't show error to user as this is handled gracefully
       } else {
         addAlert("Failed to start speech recognition. Please try again.");
       }
@@ -291,12 +371,15 @@ export const useSTTManager = ({
       wasManuallyStopped.value = false;
       messageSent.value = false; // Reset flag when starting to listen
       isProcessingInBackground.value = false; // Reset background processing flag
+      currentUserMessageId.value = null; // Reset message ID when starting new recording
       resetSpeechDetection();
+      setBrowserTimeout(); // Start browser timeout when STT starts
     } else {
       // When STT stops, reset all stopping states and speech detection
       resetSpeechDetection();
       isGracefullyStopping.value = false;
       isAutoStopping.value = false;
+      clearBrowserTimeout(); // Clear browser timeout when STT stops
     }
   });
 
@@ -328,6 +411,20 @@ export const useSTTManager = ({
       if (!hasSpeechBeenDetected.value) {
         hasSpeechBeenDetected.value = true;
       }
+
+      // If we're processing in background and get a final result, check if we should send it
+      if (
+        isProcessingInBackground.value &&
+        isFinal.value &&
+        hasValidText.value
+      ) {
+        setTimeout(async () => {
+          if (isProcessingInBackground.value && hasValidText.value) {
+            isProcessingInBackground.value = false;
+            await handleSttMessage();
+          }
+        }, 100); // Reduced from 500ms - result is already final, just ensure watcher completes
+      }
     }
   });
 
@@ -340,11 +437,13 @@ export const useSTTManager = ({
     isGracefullyStopping,
     wasManuallyStopped,
     isProcessingInBackground,
+    currentUserMessageId, // Export for audio linking
 
     // Computed properties
     canStartStt,
     isSttActive,
     hasValidText,
+    hasSpeechBeenDetected,
 
     // Methods
     stopStt,
@@ -355,5 +454,6 @@ export const useSTTManager = ({
     // Configuration
     silenceThreshold: SILENCE_THRESHOLD,
     maxConsecutiveErrors: MAX_CONSECUTIVE_ERRORS,
+    language,
   };
 };

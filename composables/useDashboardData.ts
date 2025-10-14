@@ -1,4 +1,5 @@
 import { computed, ref, watch } from "vue";
+import type { SortDirection } from "~/components/dashboard/SortableTableHeader.vue";
 import { getLatestSubmissionDate } from "~/utils/dateUtils";
 import { calculateStudentTotalPracticeTime } from "~/utils/timeUtils";
 
@@ -13,11 +14,13 @@ interface AssignmentTypeFilter {
 }
 
 interface TranscriptItem {
+  type: "user" | "bot";
+  messageId: string;
   text: string;
   timestamp: number;
 }
 
-interface Submission {
+export interface Submission {
   submissionId: string;
   duration: string;
   submittedAt: string;
@@ -28,7 +31,7 @@ interface Submission {
   pairsTotal?: number;
 }
 
-interface Assignment {
+export interface Assignment {
   id: string;
   title: string;
   isTest: boolean;
@@ -36,32 +39,19 @@ interface Assignment {
   submissions: Submission[];
 }
 
-interface Student {
+export interface Student {
   studentName: string;
   studentId: string;
   assignments: Assignment[];
 }
 
-interface ProcessedSubmission {
-  id: string;
-  duration: string;
-  submittedAt: string;
-  audioUrl: string;
-  instructorFeedback?: string;
-  aiFeedback?: string;
-  transcript: TranscriptItem[];
-  pairsTotal: number;
-}
+export interface ProcessedSubmission extends Submission {}
 
-interface ProcessedAssignment {
-  id: string;
-  title: string;
-  isTest: boolean;
-  allowed_attempts: number;
+export interface ProcessedAssignment extends Assignment {
   submissions: ProcessedSubmission[];
 }
 
-interface ProcessedStudent {
+export interface ProcessedStudent {
   name: string;
   id: string;
   assignments: ProcessedAssignment[];
@@ -78,6 +68,9 @@ interface ProcessedStudent {
 type CursorType = string | Record<string, unknown> | null;
 
 export function useDashboardData() {
+  const appStore = useAppStore();
+  const config = useRuntimeConfig();
+
   const students = ref<ProcessedStudent[]>([]);
   const filteredStudents = ref<ProcessedStudent[]>([]);
   const currentStudent = ref<ProcessedStudent | null>(null);
@@ -98,22 +91,13 @@ export function useDashboardData() {
   const searchQuery = ref("");
   const dateFilter = ref<DateFilter | null>(null);
   const sortColumn = ref<string | null>(null);
-  const sortDirection = ref("asc");
+  const sortDirection = ref<SortDirection | null>("asc");
   const selectedStudentNames = ref<string[]>([]);
   const selectedAssignmentIds = ref<string[]>([]);
   const assignmentTypeFilter = ref<AssignmentTypeFilter>({
     practice: false,
     test: false,
   });
-
-  const config = useRuntimeConfig();
-
-  function getLtik() {
-    const route = useRoute();
-    const ltik = route.query.ltik;
-    if (!ltik || typeof ltik !== "string") throw new Error("Missing LTI key");
-    return ltik;
-  }
 
   async function searchConversations(
     searchQuery: string,
@@ -170,7 +154,7 @@ export function useDashboardData() {
       const res = await fetch(url, {
         credentials: "include",
         headers: {
-          Authorization: "Bearer " + getLtik(),
+          Authorization: "Bearer " + (await appStore.getLtiKey()),
         },
       });
 
@@ -185,16 +169,17 @@ export function useDashboardData() {
             isTest: assignment.isTest,
             allowed_attempts: assignment.allowed_attempts,
             submissions: assignment.submissions.map(
-              (submission: Submission) => ({
-                id: submission.submissionId,
-                duration: submission.duration,
-                submittedAt: submission.submittedAt,
-                audioUrl: submission.audioUrl,
-                instructorFeedback: submission.instructorFeedback,
-                aiFeedback: submission.aiFeedback,
-                transcript: submission.transcript || [],
-                pairsTotal: submission.pairsTotal || 0,
-              })
+              (submission: Submission) =>
+                ({
+                  submissionId: submission.submissionId,
+                  duration: submission.duration,
+                  submittedAt: submission.submittedAt,
+                  audioUrl: submission.audioUrl,
+                  instructorFeedback: submission.instructorFeedback,
+                  aiFeedback: submission.aiFeedback,
+                  transcript: submission.transcript || [],
+                  pairsTotal: submission.pairsTotal || 0,
+                }) satisfies ProcessedSubmission
             ),
           }));
 
@@ -300,7 +285,7 @@ export function useDashboardData() {
       const res = await fetch(url, {
         credentials: "include",
         headers: {
-          Authorization: "Bearer " + getLtik(),
+          Authorization: "Bearer " + (await appStore.getLtiKey()),
         },
       });
 
@@ -404,7 +389,7 @@ export function useDashboardData() {
       const res = await fetch(url, {
         credentials: "include",
         headers: {
-          Authorization: "Bearer " + getLtik(),
+          Authorization: "Bearer " + (await appStore.getLtiKey()),
         },
       });
       const result = await res.json();
@@ -424,8 +409,10 @@ export function useDashboardData() {
           student.assignments.forEach((assignment: ProcessedAssignment) => {
             assignment.submissions.forEach(
               (submission: ProcessedSubmission) => {
-                if (audioUrlMap.has(submission.id)) {
-                  submission.audioUrl = audioUrlMap.get(submission.id);
+                if (audioUrlMap.has(submission.submissionId)) {
+                  submission.audioUrl = audioUrlMap.get(
+                    submission.submissionId
+                  );
                 }
               }
             );
@@ -455,7 +442,7 @@ export function useDashboardData() {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + getLtik(),
+            Authorization: "Bearer " + (await appStore.getLtiKey()),
           },
           body: JSON.stringify({ instructorFeedback: feedback }),
         }

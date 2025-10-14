@@ -34,24 +34,23 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { DashboardFilters } from "~/types/types";
 import AssignmentCard from "./AssignmentCard.vue";
 import FilterButton from "./FilterButton.vue";
 
-defineProps({
-  currentStudent: {
-    type: Object,
-    default: null,
-  },
-  students: {
-    type: Array,
-    required: true,
-  },
-  isInstructor: {
-    type: Boolean,
-    required: true,
-  },
+interface Props {
+  currentStudent?: ProcessedStudent | null;
+  students: ProcessedStudent[];
+  isInstructor: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  currentStudent: null,
 });
 
-defineEmits(["filter-change", "show-assignment-details"]);
+defineEmits<{
+  "filter-change": [DashboardFilters | null];
+  "show-assignment-details": [ProcessedAssignment];
+}>();
 </script>

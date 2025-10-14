@@ -67,23 +67,31 @@ const handleWebSocketError = (
 ) => {
   if (!messageId) {
     appStore.addAlert("An unexpected error occurred. Please try again later.");
-    // Clear any active TTS requests since we can't identify the specific message
-    appStore.clearAllTTSRequests();
-    // Clear suggestion loading state since it's global
-    messageStore.setIsSuggestionLoading(false);
-    // Clear submit loading state since it's global
-    messageStore.isSubmitting = false;
-    // Clear any active bot message loading states
+    // Clear any active TTS requests since we can't identify the specific message (with delay)
+    setTimeout(() => {
+      appStore.clearAllTTSRequests();
+    }, 1000);
+    // Clear suggestion loading state since it's global (with delay)
+    setTimeout(() => {
+      messageStore.setIsSuggestionLoading(false);
+    }, 1000);
+    // Clear submit loading state since it's global (with delay)
+    setTimeout(() => {
+      messageStore.isSubmitting = false;
+    }, 1000);
+    // Clear any active bot message loading states (with delay)
     const mostRecentLoadingBotMessageId =
       messageStore.getMostRecentLoadingBotMessage();
     if (mostRecentLoadingBotMessageId) {
-      messageStore.setMessageComplete(mostRecentLoadingBotMessageId, false);
+      setTimeout(() => {
+        messageStore.setMessageComplete(mostRecentLoadingBotMessageId, false);
+      }, 1000);
     }
     return;
   }
 
   if (!responseType) {
-    appStore.addAlert("Audio regeneration failed. Please try again later.");
+    appStore.addAlert("Something went wrong. Try again later.");
     // Clear TTS request tracking if this was a TTS request
     if (messageId && appStore.ttsRequestMessageIds?.has(messageId)) {
       appStore.clearTTSRequest(messageId);
@@ -96,15 +104,12 @@ const handleWebSocketError = (
       appStore.addAlert("Failed to send message. Please try again.");
       // Clear STT text buffer when user text fails
       appStore.userPrompt = "";
-      // If we have a messageId, try to clear any pending TTS requests for it
-      if (messageId && clearTTSRequest) {
-        clearTTSRequest(messageId);
-        messageStore.markTTSCompleted(messageId);
-      }
+      // Don't clear TTS requests for user text errors - let TTS requests complete normally
       break;
     case WebSocketTextRequestType.TRANSLATION:
       appStore.addAlert(ERROR_MESSAGES.TRANSLATION);
       messageStore.setTranslationError(messageId, ERROR_MESSAGES.TRANSLATION);
+      messageStore.clearTranslationTimeout(messageId);
       break;
     case WebSocketTextRequestType.FEEDBACK:
       appStore.addAlert(ERROR_MESSAGES.FEEDBACK);
@@ -118,12 +123,13 @@ const handleWebSocketError = (
       );
       break;
     case WebSocketTextRequestType.TTS:
-      appStore.addAlert("Failed to generate audio. Please try again.");
-      messageStore.addMessageError(messageId);
-      appStore.clearTTSRequest(messageId);
+      messageStore.setTTSError(
+        messageId,
+        "Failed to generate audio. Please try again."
+      );
       break;
     default:
-      appStore.addAlert("Audio regeneration failed. Please try again later.");
+      appStore.addAlert("Something went wrong, please try again later.");
       // Clear TTS request tracking if this was a TTS request
       if (messageId && appStore.ttsRequestMessageIds?.has(messageId)) {
         appStore.clearTTSRequest(messageId);
@@ -155,45 +161,56 @@ const clearAllLoadingStates = (
   appStore: ReturnType<typeof useAppStore>,
   messageStore: ReturnType<typeof useMessageStore>
 ) => {
-  // Clear TTS play button loaders
-  appStore.clearAllTTSRequests();
+  // Clear TTS play button loaders with delay
+  setTimeout(() => {
+    appStore.clearAllTTSRequests();
+  }, 1000);
 
-  // Clear suggestion (Get Tip) loaders
-  messageStore.setIsSuggestionLoading(false);
+  // Clear suggestion (Get Tip) loaders (with delay)
+  setTimeout(() => {
+    messageStore.setIsSuggestionLoading(false);
+  }, 1000);
 
-  // Clear submit loaders
-  messageStore.isSubmitting = false;
+  // Clear submit loaders (with delay)
+  setTimeout(() => {
+    messageStore.isSubmitting = false;
+  }, 1000);
 
-  // Stop STT (mic) if it's currently listening
-  if (appStore.sttListening) {
-    appStore.stopStt();
-  }
-
-  // Clear any active bot message loading states and mark as failed for retry
+  // Clear any active bot message loading states and mark as failed for retry (with delay)
   const mostRecentLoadingBotMessageId =
     messageStore.getMostRecentLoadingBotMessage();
   if (mostRecentLoadingBotMessageId) {
     messageStore.addMessageError(mostRecentLoadingBotMessageId);
-    messageStore.setMessageComplete(mostRecentLoadingBotMessageId, false);
-    messageStore.updateMessage(mostRecentLoadingBotMessageId, {
-      type: "bot",
-      text: "Message failed",
-    });
+    setTimeout(() => {
+      messageStore.setMessageComplete(mostRecentLoadingBotMessageId, false);
+      messageStore.updateMessage(mostRecentLoadingBotMessageId, {
+        type: "bot",
+        text: "Message failed",
+      });
+    }, 1000);
   }
 
   // Clear all feedback and translation loading states by iterating through all messages
   if (messageStore.messages) {
     for (const [messageId] of messageStore.messages.entries()) {
-      // Clear feedback loading state for this message
+      // Clear feedback loading state for this message and set error (without adding alert)
       const feedbackState = messageStore.getFeedbackState(messageId);
       if (feedbackState?.isLoading) {
-        messageStore.setIsFeedbackLoading(messageId, false);
+        messageStore.setFeedbackError(
+          messageId,
+          "Connection failed. Unable to get feedback at this time.",
+          false // Don't add alert
+        );
       }
 
-      // Clear translation loading state for this message
+      // Clear translation loading state for this message and set error (without adding alert)
       const translationState = messageStore.getTranslationState(messageId);
       if (translationState?.isLoading) {
-        messageStore.setIsTranslationLoading(messageId, false);
+        messageStore.setTranslationError(
+          messageId,
+          "Connection failed. Unable to translate at this time.",
+          false // Don't add alert
+        );
       }
     }
   }
@@ -230,6 +247,11 @@ export const useLBWebSocket = (
   // Function to clear all TTS request tracking
   const clearAllTTSRequests = () => {
     ttsRequestMessageIds.value.clear();
+  };
+
+  // Function to set current bot message ID
+  const setCurrentBotMessageId = (messageId: string) => {
+    currentBotMessageId.value = messageId;
   };
 
   // Function to clear current bot message ID
@@ -276,14 +298,35 @@ export const useLBWebSocket = (
 
     let offset = 0;
     for (const chunk of audioChunks) {
-      concatenatedData.set(chunk.data, offset);
-      offset += chunk.data.length;
+      // Ensure chunk.data is a regular array, not Uint8Array
+      const dataArray: number[] = Array.isArray(chunk.data)
+        ? chunk.data
+        : Array.from(chunk.data);
+      concatenatedData.set(dataArray, offset);
+      offset += dataArray.length;
     }
 
     return {
       type: "Buffer" as const,
       data: Array.from(concatenatedData),
     };
+  };
+
+  // Helper function to set finalization timeout
+  const setFinalizationTimeout = (messageId: string): void => {
+    // Clear any existing timeout
+    if (finalizationTimeout.value) {
+      clearTimeout(finalizationTimeout.value);
+    }
+
+    // Calculate delay and set new timeout
+    const audioChunkCount = currentBotAudioData.value.length;
+    const finalizationDelay = Math.max(1500, audioChunkCount * 500); // At least 1.5 seconds, +0.5 seconds per chunk
+
+    finalizationTimeout.value = setTimeout(() => {
+      finalizeBotMessage(messageId);
+      finalizationTimeout.value = null;
+    }, finalizationDelay);
   };
 
   // Function to finalize bot message with accumulated audio data
@@ -299,25 +342,36 @@ export const useLBWebSocket = (
     // Handle successful completion
     messageStore.handleBotResponseSuccess(messageId);
 
-    // Clear current bot message tracking
-    currentBotMessageId.value = null;
     // Mark as finalizing to prevent race conditions
     audioChunkTracker.value.isFinalizing = true;
 
+    // Clear current bot message tracking
+    currentBotMessageId.value = null;
+
+    // Handle audio saving FIRST, then mark as complete
     try {
       if (currentBotAudioData.value.length > 0) {
         const concatenatedAudioData = concatenateAudioChunks(
           currentBotAudioData.value
         );
 
+        // Ensure the audio data is properly serializable for IndexedDB
+        const serializableAudioData: BackendAudioResponse = {
+          type: "Buffer" as const,
+          data: Array.isArray(concatenatedAudioData.data)
+            ? concatenatedAudioData.data
+            : Array.from(concatenatedAudioData.data),
+        };
+
         const audioStore = useAudioStore();
         // Get the message text to create a content key for content-based lookup
         const message = messageStore.getMessage(messageId);
         const contentKey = generateContentKey(message?.text);
 
+        // Save audio to IndexedDB (BLOCKING - wait for completion)
         const savedSuccessfully = await audioStore.saveAudio(
           messageId,
-          concatenatedAudioData,
+          serializableAudioData,
           contentKey
         );
 
@@ -339,12 +393,24 @@ export const useLBWebSocket = (
         // Mark TTS as completed to trigger loader clearing
         messageStore.markTTSCompleted(messageId);
 
+        // Safari-specific: Mark audio as complete for immediate playback
+        const chatbotStore = useChatbotStore();
+        if (chatbotStore.ttsAudioManager.markSafariAudioComplete) {
+          await chatbotStore.ttsAudioManager.markSafariAudioComplete(messageId);
+        }
+
         // Clear accumulated audio data
         currentBotAudioData.value = [];
       } else {
         // Still mark TTS as completed even if no audio data to finalize
         // This ensures loaders get cleared for messages that were processed by TTS audio manager
         messageStore.markTTSCompleted(messageId);
+
+        // Safari-specific: Mark audio as complete even without audio data
+        const chatbotStore = useChatbotStore();
+        if (chatbotStore.ttsAudioManager.markSafariAudioComplete) {
+          await chatbotStore.ttsAudioManager.markSafariAudioComplete(messageId);
+        }
       }
 
       messageStore.setMessageComplete(messageId, true);
@@ -456,6 +522,13 @@ export const useLBWebSocket = (
       console.log("WebSocket disconnected:", event.code, event.reason);
       isReconnecting.value = false;
 
+      // Dispatch custom event for ChatMessage components to listen to
+      window.dispatchEvent(
+        new CustomEvent("websocket-error", {
+          detail: { event, code: event.code },
+        })
+      );
+
       // Only attempt reconnection if it wasn't a manual close
       if (
         event.code !== 1000 &&
@@ -464,13 +537,23 @@ export const useLBWebSocket = (
         scheduleReconnect();
       } else if (reconnectAttempts.value >= WEBSOCKET_CONFIG.MAX_RETRIES) {
         console.error("WebSocket reconnection failed after maximum retries");
-        appStore.addAlert(ERROR_MESSAGES.WS_OPEN);
+
+        // Only show generic websocket error if no specific actions are in progress
+        if (!appStore.websocketRequestInProgress) {
+          appStore.addAlert(ERROR_MESSAGES.WS_OPEN);
+        }
+
         // Clear all loading states when WebSocket connection fails permanently
         clearAllLoadingStates(appStore, messageStore);
       }
     },
     onError: (ws, event) => {
       console.error("WebSocket error:", event);
+      // Dispatch custom event for ChatMessage components to listen to
+      const customEvent = new CustomEvent("websocket-error", {
+        detail: { event },
+      });
+      window.dispatchEvent(customEvent);
     },
   });
 
@@ -538,7 +621,6 @@ export const useLBWebSocket = (
   // Process feedback responses
   const processFeedbackResponse = (data: FeedbackWebSocketResponseData) => {
     const originalMessage = messageStore.getMessage(data.message_id);
-
     if (originalMessage) {
       messageStore.updateMessage(data.message_id, {
         type: originalMessage.type,
@@ -614,52 +696,38 @@ export const useLBWebSocket = (
     const mostRecentLoadingBotMessageId =
       messageStore.getMostRecentLoadingBotMessage();
 
-    if (mostRecentLoadingBotMessageId) {
-      // Get the current message to accumulate text
-      const currentMessage = messageStore.getMessage(
-        mostRecentLoadingBotMessageId
-      );
-      const currentText = currentMessage?.text || "";
-      const newText = currentText + data.text;
+    if (!mostRecentLoadingBotMessageId) {
+      return;
+    }
 
-      // Update the existing bot message with accumulated text
-      messageStore.updateMessage(
-        mostRecentLoadingBotMessageId,
-        {
-          type: "bot",
-          text: newText,
-          isLoading: true,
-          isComplete: false,
-        },
-        {
-          overwrite: true,
-        }
-      );
+    // Get the current message to accumulate text
+    const currentMessage = messageStore.getMessage(
+      mostRecentLoadingBotMessageId
+    );
+    const currentText = currentMessage?.text || "";
+    const newText = currentText + data.text;
 
-      // Track this as the current bot message
-      currentBotMessageId.value = mostRecentLoadingBotMessageId;
-    } else {
-      // Create new bot message if none exists
-      // Clear any existing audio data when starting a new message
-      currentBotAudioData.value = [];
-
-      // Use a consistent ID for the bot message we create
-      const botMessageId = `bot-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      messageStore.updateMessage(botMessageId, {
+    // Update the existing bot message with accumulated text
+    messageStore.updateMessage(
+      mostRecentLoadingBotMessageId,
+      {
         type: "bot",
-        text: data.text,
+        text: newText,
         isLoading: true,
         isComplete: false,
-      });
+      },
+      {
+        overwrite: true,
+      }
+    );
 
-      // Track this as the current bot message
-      currentBotMessageId.value = botMessageId;
-    }
+    // Track this as the current bot message
+    currentBotMessageId.value = mostRecentLoadingBotMessageId;
   };
 
   // Process suggestion responses
   const processSuggestionResponse = (data: SuggestionWebSocketResponseData) => {
-    messageStore.setSuggestion(data.text);
+    messageStore.setSuggestion(data.text, data.message_id);
     // Don't clear loading state here - only clear on EVENT_TEXT_END
   };
 
@@ -755,7 +823,7 @@ export const useLBWebSocket = (
   };
 
   // Process TTS audio responses (for manual TTS requests)
-  const processTTSAudioResponse = (data: WebSocketMessageData) => {
+  const processTTSAudioResponse = async (data: WebSocketMessageData) => {
     // Handle TTS audio chunks for avatar lip sync
     if (
       "audio" in data &&
@@ -800,7 +868,7 @@ export const useLBWebSocket = (
           // Stop any ongoing TTS audio processing to prevent mixing
           const chatbotStore = useChatbotStore();
           if (chatbotStore.ttsAudioManager.isPlaying) {
-            chatbotStore.ttsAudioManager.stopAudio();
+            await chatbotStore.ttsAudioManager.stopAudio();
           }
         }
 
@@ -891,7 +959,10 @@ export const useLBWebSocket = (
     }
   };
 
-  const handleTextEvent = (data: WebSocketTextMessageData) => {
+  const handleTextEvent = (
+    data: WebSocketTextMessageData,
+    eventType?: string
+  ) => {
     if (!data?.message_id) {
       return;
     }
@@ -911,34 +982,56 @@ export const useLBWebSocket = (
         return;
       }
 
-      // Check if this is a feedback response for a user message
-      if (originalMessage && originalMessage.type === "user") {
-        processFeedbackResponse(data as FeedbackWebSocketResponseData);
+      // Feedback responses are handled by the response_type switch below
+
+      // Handle EVENT_TEXT_END for suggestions - clear loading state
+      // IMPORTANT: Only stop loader if this message_id matches the active suggestion request
+      // This prevents bot response EVENT_TEXT_END from stopping suggestion loader (race condition fix)
+      const activeSuggestionId = messageStore.getActiveSuggestionRequestId();
+      if (
+        messageStore.getSuggestion().isLoading &&
+        activeSuggestionId === data.message_id
+      ) {
+        messageStore.setIsSuggestionLoading(false);
         return;
       }
 
-      // Handle EVENT_TEXT_END for suggestions - clear loading state
-      if (messageStore.getSuggestion().isLoading) {
-        messageStore.setIsSuggestionLoading(false);
+      // Check if there are any loading bot messages that need finalization
+      // This is a fallback for cases where the original message is not a bot message
+      // but we still have loading bot messages that need to be finalized
+      const mostRecentLoadingBotMessageId =
+        messageStore.getMostRecentLoadingBotMessage();
+      if (mostRecentLoadingBotMessageId) {
+        // Schedule finalization with delay to ensure all audio chunks arrive
+        setFinalizationTimeout(mostRecentLoadingBotMessageId);
         return;
       }
 
       // Handle EVENT_TEXT_END for bot responses - finalize the message
       if (originalMessage && originalMessage.type === "bot") {
-        // Schedule finalization with a longer delay to ensure all audio chunks arrive
-        const messageId = data.message_id;
-        if (finalizationTimeout.value) {
-          clearTimeout(finalizationTimeout.value);
+        // Use the current bot message ID instead of the user message ID from the response
+        let botMessageId = currentBotMessageId.value || data.message_id;
+
+        // If currentBotMessageId is null, try to find the bot message by looking for loading bot messages
+        if (!currentBotMessageId.value) {
+          const mostRecentLoadingBotMessageId =
+            messageStore.getMostRecentLoadingBotMessage();
+          if (mostRecentLoadingBotMessageId) {
+            botMessageId = mostRecentLoadingBotMessageId;
+          }
         }
 
-        // Wait longer for audio chunks to arrive after text ends
-        const audioChunkCount = currentBotAudioData.value.length;
-        const finalizationDelay = Math.max(4000, audioChunkCount * 1000); // At least 4 seconds, +1 second per chunk
+        // Schedule finalization with delay to ensure all audio chunks arrive
+        setFinalizationTimeout(botMessageId);
 
-        finalizationTimeout.value = setTimeout(() => {
-          finalizeBotMessage(messageId);
-          finalizationTimeout.value = null;
-        }, finalizationDelay);
+        return;
+      }
+
+      // Fallback: If no original message found or it's not a bot message,
+      // but we have a current bot message ID, use that for finalization
+      if (currentBotMessageId.value) {
+        // Schedule finalization with delay to ensure all audio chunks arrive
+        setFinalizationTimeout(currentBotMessageId.value);
 
         return;
       }
@@ -970,6 +1063,17 @@ export const useLBWebSocket = (
         break;
       case WebSocketResponseType.SUGGESTION:
         processSuggestionResponse(data as SuggestionWebSocketResponseData);
+        // Clear loading state if this is EVENT_TEXT_END
+        if (eventType === WebSocketEventType.EVENT_TEXT_END) {
+          const activeSuggestionId =
+            messageStore.getActiveSuggestionRequestId();
+          if (
+            messageStore.getSuggestion().isLoading &&
+            activeSuggestionId === data.message_id
+          ) {
+            messageStore.setIsSuggestionLoading(false);
+          }
+        }
         break;
       default:
         // Handle any other response types
@@ -1029,16 +1133,17 @@ export const useLBWebSocket = (
     if (!data) {
       throw new Error("Missing conversation end event data");
     }
-    if (!data.feedback) {
+    if (
+      !data.feedback ||
+      !data.feedback.whatWentWell ||
+      !data.feedback.suggestionsForImprovement
+    ) {
       throw new Error("Missing feedback");
     }
 
     // Only navigate if submit was successful
     if (messageStore.submitSuccess) {
-      appStore.updateLessonFeedback(
-        data.feedback.whatWentWell,
-        data.feedback.suggestionsForImprovement
-      );
+      appStore.updateLessonFeedback(data.feedback);
       await navigateTo("/lesson-result");
     }
   };
@@ -1066,19 +1171,19 @@ export const useLBWebSocket = (
           const responseType = (message.data as WebSocketErrorResponseData)
             ?.response_type;
 
-          // Handle feedback errors (check both waiting status and response type)
+          // Handle feedback errors
           if (
             messageId &&
             (messageStore.isWaitingForFeedback(messageId) ||
               responseType === WebSocketTextRequestType.FEEDBACK)
           ) {
             messageStore.setFeedbackError(messageId, ERROR_MESSAGES.FEEDBACK);
-            messageStore.clearFeedbackTimeout(messageId);
+            // Don't clear timeout immediately - let the error function handle it with delay
             appStore.addAlert(ERROR_MESSAGES.FEEDBACK);
             return;
           }
 
-          // Handle translation errors (check both waiting status and response type)
+          // Handle translation errors
           if (
             messageId &&
             (messageStore.isWaitingForTranslation(messageId) ||
@@ -1088,7 +1193,7 @@ export const useLBWebSocket = (
               messageId,
               ERROR_MESSAGES.TRANSLATION
             );
-            messageStore.clearTranslationTimeout(messageId);
+            // Don't clear timeout immediately - let the error function handle it with delay
             appStore.addAlert(ERROR_MESSAGES.TRANSLATION);
             return;
           }
@@ -1140,11 +1245,24 @@ export const useLBWebSocket = (
             return;
           }
 
-          // Always find the most recent loading bot message and mark it as having an error
-          // regardless of whether message_id is provided or not
+          // Only mark bot message as failed if this is NOT a suggestion error
+          // Check if suggestion is loading to avoid marking bot messages as failed for suggestion errors
+          const currentSuggestion = messageStore.getSuggestion();
+          if (currentSuggestion.isLoading) {
+            messageStore.setSuggestionError(
+              "Failed to get suggestion. Please try again."
+            );
+            appStore.addAlert("Failed to get suggestion. Please try again.");
+            return;
+          }
+
+          // Only mark bot message as failed if this is not a suggestion error
           const mostRecentLoadingBotMessageId =
             messageStore.getMostRecentLoadingBotMessage();
-          if (mostRecentLoadingBotMessageId) {
+          if (
+            mostRecentLoadingBotMessageId &&
+            responseType !== WebSocketTextRequestType.SUGGESTION
+          ) {
             messageStore.addMessageError(mostRecentLoadingBotMessageId);
             // Mark the bot message as not loading anymore and add error text
             messageStore.setMessageComplete(
@@ -1209,7 +1327,8 @@ export const useLBWebSocket = (
               | UserTextWebSocketResponseData
               | TranslationWebSocketResponseData
               | FeedbackWebSocketResponseData
-              | SuggestionWebSocketResponseData
+              | SuggestionWebSocketResponseData,
+            message.event_type
           );
           return;
         case WebSocketEventType.EVENT_AUDIO_START:
@@ -1225,7 +1344,7 @@ export const useLBWebSocket = (
             processBotResponseAudio(message.data);
           } else {
             // This is a manual TTS request, process it with the existing logic
-            processTTSAudioResponse(message.data);
+            await processTTSAudioResponse(message.data);
           }
           return;
         case WebSocketEventType.EVENT_AUDIO_END:
@@ -1264,17 +1383,11 @@ export const useLBWebSocket = (
             if (botMessage && botMessage.type === "bot") {
               // Check if this is a TTS error
               if (message.message === "TTS processing failed") {
-                // Handle TTS failure - clear loader and show error
-                appStore.addAlert(
+                // Handle TTS failure with delay - use the setTTSError function
+                messageStore.setTTSError(
+                  messageId,
                   "Failed to generate audio. Please try again."
                 );
-                messageStore.addMessageError(messageId);
-
-                // Clear TTS request tracking for this message
-                clearTTSRequest(messageId);
-
-                // Clear the play button loader by marking TTS as completed
-                messageStore.markTTSCompleted(messageId);
               } else {
                 // Handle successful TTS completion
                 clearTTSRequest(messageId);
@@ -1370,6 +1483,7 @@ export const useLBWebSocket = (
     trackTTSRequest,
     clearTTSRequest,
     clearAllTTSRequests,
+    setCurrentBotMessageId,
     clearCurrentBotMessageId,
     ttsRequestMessageIds,
   };

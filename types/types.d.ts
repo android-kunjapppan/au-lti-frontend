@@ -145,6 +145,11 @@ export interface LessonOverviewData {
     };
   };
 }
+
+export interface LessonFeedback {
+  whatWentWell: string[];
+  suggestionsForImprovement: string[];
+}
 //#endregion
 
 //#region WebSocket Requests
@@ -240,10 +245,7 @@ export interface ConversationStartWebSocketResponseData {
 }
 
 export interface ConversationEndWebSocketResponseData {
-  feedback: {
-    whatWentWell: string[];
-    suggestionsForImprovement: string[];
-  };
+  feedback: LessonFeedback;
 }
 
 export interface UserTextWebSocketResponseData {

@@ -1,4 +1,5 @@
 import { reactive, ref } from "vue";
+import { useSharedAudioContext } from "~/composables/useSharedAudioContext";
 import { useChatbotStore } from "~/stores/useChatbotStore";
 
 // Create a shared singleton lipSyncStatus object
@@ -30,8 +31,10 @@ export const useAudioAnalysis = () => {
   const volume = ref<number>(0.8);
   // Use the shared lipSyncStatus object
   const lipSyncStatus = sharedLipSyncStatus;
+  // Use shared AudioContext
+  const { audioContext, initAudioContext, ensureAudioContextRunning } =
+    useSharedAudioContext();
   // Web Audio API objects
-  let audioContext: AudioContext | null = null;
   let audioSource: MediaElementAudioSourceNode | null = null;
   let analyser: AnalyserNode | null = null;
   let dataArray: Uint8Array<ArrayBuffer> | null = null;
@@ -51,23 +54,35 @@ export const useAudioAnalysis = () => {
    * Sets up the Web Audio API context and connects the audio element.
    * Also starts the lip sync update loop.
    */
-  const setupAudioAnalysis = (): void => {
+  const setupAudioAnalysis = async (): Promise<void> => {
     try {
-      audioContext = new AudioContext();
-      analyser = audioContext.createAnalyser();
+      // Initialize shared AudioContext
+      await initAudioContext();
+
+      if (!audioContext.value) {
+        console.error("Failed to initialize AudioContext");
+        return;
+      }
+
+      analyser = audioContext.value.createAnalyser();
       analyser.fftSize = AUDIO_ANALYSIS_CONFIG.FFT_SIZE; // Determines frequency resolution
       analyser.smoothingTimeConstant =
         AUDIO_ANALYSIS_CONFIG.SMOOTHING_TIME_CONSTANT;
       dataArray = new Uint8Array(analyser.frequencyBinCount);
+
       // Delay to ensure audio element is mounted and ready
-      setTimeout(() => {
+      setTimeout(async () => {
         const audio = audioElement.value;
-        if (!audio || !audioContext || !analyser) return;
+        if (!audio || !audioContext.value || !analyser) return;
+
+        // Ensure AudioContext is running
+        await ensureAudioContextRunning();
+
         audio.volume = volume.value;
         // Create a source node from the audio element
-        audioSource = audioContext.createMediaElementSource(audio);
+        audioSource = audioContext.value!.createMediaElementSource(audio);
         audioSource.connect(analyser);
-        analyser.connect(audioContext.destination);
+        analyser.connect(audioContext.value!.destination);
         startLipSyncLoop();
       }, AUDIO_ANALYSIS_CONFIG.SETUP_DELAY);
     } catch (error) {
@@ -129,10 +144,8 @@ export const useAudioAnalysis = () => {
         audio.pause();
         isPlaying.value = false;
       } else {
-        // Resume audio context if it was suspended (browser autoplay policy)
-        if (audioContext?.state === "suspended") {
-          await audioContext.resume();
-        }
+        // Ensure AudioContext is running before playing
+        await ensureAudioContextRunning();
         await audio.play();
         isPlaying.value = true;
       }
@@ -160,12 +173,12 @@ export const useAudioAnalysis = () => {
    * - Calculates overall amplitude in a user-defined frequency range for morphing.
    */
   const analyzeAudio = (): { amplitude: number; activeSound: string } => {
-    if (!analyser || !dataArray || !audioContext)
+    if (!analyser || !dataArray || !audioContext.value)
       return { amplitude: 0, activeSound: "none" };
     // Get frequency data from the analyser node
     analyser.getByteFrequencyData(dataArray);
     // Calculate frequency bin width
-    const nyquist = audioContext.sampleRate / 2;
+    const nyquist = audioContext.value.sampleRate / 2;
     const binWidth = nyquist / analyser.frequencyBinCount;
     // Use centralized frequency bands for phoneme detection
     const bands = AUDIO_ANALYSIS_CONFIG.FREQUENCY_BANDS;
@@ -233,7 +246,7 @@ export const useAudioAnalysis = () => {
    */
   const cleanup = () => {
     stopLipSyncLoop();
-    if (audioContext) audioContext.close();
+    // Note: We don't close the shared AudioContext here as it might be used by other components
   };
   // Expose state and methods for use in components
   return {

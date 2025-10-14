@@ -49,7 +49,7 @@
             class="wave-bar"
             v-for="(bar, index) in waveform"
             :key="index"
-            :style="{ height: bar + 'px', width: '2px', margin: '0 2px' }" />
+            :style="{ height: bar + '%', width: '2px', margin: '0 2px' }" />
         </div>
       </div>
     </button>
@@ -68,6 +68,8 @@
 
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from "vue";
+import { useSharedAudioContext } from "~/composables/useSharedAudioContext";
+import { AUDIO_CONFIG } from "~/utils/constants";
 
 interface Props {
   isActive?: boolean;
@@ -101,6 +103,7 @@ const {
   isSttDisabled,
   isGracefullyStopping,
   isProcessingInBackground,
+  currentUserMessageId, // Track if text message was sent
   toggleSttWithErrorHandling,
   handleSttMessage,
 } = sttManager;
@@ -128,14 +131,111 @@ const { sendAudioMessage, sendAudioEndMessage } = useAudioWebSocket();
 const manualInput = ref("");
 const firstAudioChunkSent = ref(false);
 
+// Consolidated pending audio state for atomic updates
+const pendingAudio = ref<{
+  blob: Blob | null;
+  sessionId: string | null;
+  timeoutId: NodeJS.Timeout | null;
+  isUploading: boolean; // Guard against concurrent uploads
+}>({
+  blob: null,
+  sessionId: null,
+  timeoutId: null,
+  isUploading: false,
+});
+
+// Helper: Clear pending audio timeout
+const clearPendingAudioTimeout = () => {
+  if (pendingAudio.value.timeoutId) {
+    clearTimeout(pendingAudio.value.timeoutId);
+    pendingAudio.value.timeoutId = null;
+  }
+};
+
+// Helper: Clear all pending audio state
+const clearPendingAudio = () => {
+  clearPendingAudioTimeout();
+  pendingAudio.value = {
+    blob: null,
+    sessionId: null,
+    timeoutId: null,
+    isUploading: false,
+  };
+};
+
 // Create a callback for when audio ends
 const handleAudioEnd = async (audioBlob?: Blob) => {
-  // Only send audio end message if audio data was actually sent
-  if (audioSessionId.value && firstAudioChunkSent.value) {
-    await sendAudioEndMessage(audioSessionId.value, audioBlob);
-  }
-  // Reset the flag regardless
+  // Reset chunk flag
   firstAudioChunkSent.value = false;
+
+  // Clear any existing pending audio
+  clearPendingAudioTimeout();
+
+  // Guard: If no audio data, nothing to do
+  if (!audioBlob || !audioSessionId.value) {
+    return;
+  }
+
+  // Store the audio blob and session ID for later upload
+  pendingAudio.value.blob = audioBlob;
+  pendingAudio.value.sessionId = audioSessionId.value;
+
+  // If text message already exists, upload immediately (no race with watcher)
+  if (currentUserMessageId.value) {
+    await uploadPendingAudio();
+    return; // Exit early - watcher won't trigger since we're clearing state
+  }
+
+  // Set timeout to clear pending audio if transcription takes too long
+  pendingAudio.value.timeoutId = setTimeout(() => {
+    if (pendingAudio.value.blob && !currentUserMessageId.value) {
+      console.warn(
+        "[Audio] Transcription timeout - clearing pending audio after",
+        AUDIO_CONFIG.UPLOAD_TIMEOUT_MS / 1000,
+        "seconds"
+      );
+      clearPendingAudio();
+    }
+  }, AUDIO_CONFIG.UPLOAD_TIMEOUT_MS);
+};
+
+// Function to upload pending audio after text message is confirmed
+const uploadPendingAudio = async () => {
+  // Guard: Prevent concurrent uploads
+  if (pendingAudio.value.isUploading) {
+    return;
+  }
+
+  // Guard: Check if we have pending audio
+  if (!pendingAudio.value.blob || !pendingAudio.value.sessionId) {
+    return;
+  }
+
+  // Guard: Check if text message exists
+  if (!currentUserMessageId.value) {
+    clearPendingAudio();
+    return;
+  }
+
+  // Set upload guard
+  pendingAudio.value.isUploading = true;
+
+  // Clear timeout since we're uploading now
+  clearPendingAudioTimeout();
+
+  // Store references for upload (in case state changes during async operation)
+  const blobToUpload = pendingAudio.value.blob;
+  const sessionIdToUpload = pendingAudio.value.sessionId;
+
+  try {
+    await sendAudioEndMessage(sessionIdToUpload, blobToUpload);
+  } catch (error) {
+    console.error("[Audio] Failed to upload audio:", error);
+    appStore.addAlert("Failed to upload audio recording. Please try again.");
+  } finally {
+    // Clear all pending audio state after upload attempt
+    clearPendingAudio();
+  }
 };
 
 const {
@@ -147,33 +247,43 @@ const {
   cleanupAudio,
 } = useAudioRecording(handleAudioEnd);
 
+const { initAudioContext, handleUserInteraction, ensureAudioContextRunning } =
+  useSharedAudioContext();
+
 // Computed
 const buttonClass = computed(() => {
   // If there's a bot error, show error state
-  if (hasBotError.value) return "circle-error";
+  if (hasBotError.value) {
+    return "circle-error";
+  }
 
-  // If bot is responding or microphone is disabled, show disabled state
-  if (isSttDisabled.value || messageStore.isBotResponding || !props.isActive)
+  // If bot is responding, microphone is disabled, or not active, show disabled state (grey)
+  if (isSttDisabled.value || messageStore.isBotResponding || !props.isActive) {
     return "circle-disabled";
+  }
+
+  // If in stopping states or processing in background, show disabled state (grey)
+  if (isGracefullyStopping.value || isProcessingInBackground.value) {
+    return "circle-disabled";
+  }
 
   // If actively listening or recording, show active state (red)
-  if (sttListening.value || isAudioRecording.value) return "circle-active";
-
-  // If in stopping states or processing in background, show disabled state (grey) instead of inactive (green)
-  if (isGracefullyStopping.value || isProcessingInBackground.value)
-    return "circle-disabled";
+  if (sttListening.value || isAudioRecording.value) {
+    return "circle-active";
+  }
 
   // Default to inactive state (green) when ready
   return "circle-inactive";
 });
 
 // Computed for loading state
-const isLoadingState = computed(
-  () =>
+const isLoadingState = computed(() => {
+  return (
     messageStore.isBotResponding ||
     isGracefullyStopping.value ||
     isProcessingInBackground.value
-);
+  );
+});
 
 // Watch both STT and audio recording to control waveform
 watch([sttListening, isAudioRecording], ([isSttActive, isRecording]) => {
@@ -187,7 +297,7 @@ watch([sttListening, isAudioRecording], ([isSttActive, isRecording]) => {
 // Watch for bot response completion to ensure proper microphone state
 watch(
   () => messageStore.isBotResponding,
-  (isResponding) => {
+  (isResponding, wasResponding) => {
     if (!isResponding) {
       // When bot stops responding, only reset retry counter if no errors
       messageStore.resetRetryCount();
@@ -205,6 +315,26 @@ watch(sttListening, async (isListening) => {
     await stopAudioRecording(handleAudioEnd);
   }
 });
+
+// Watch for text message creation to trigger pending audio upload
+watch(
+  currentUserMessageId,
+  async (messageId) => {
+    // Only trigger upload if we have pending audio and not already uploading
+    if (
+      messageId &&
+      pendingAudio.value.blob &&
+      !pendingAudio.value.isUploading
+    ) {
+      try {
+        await uploadPendingAudio();
+      } catch (error) {
+        console.error("[Audio] Watcher failed to upload audio:", error);
+      }
+    }
+  },
+  { flush: "post" } // Run after component updates to avoid timing issues
+);
 
 // Event handlers
 const handleSttClick = async () => {
@@ -290,7 +420,13 @@ const sendManualMessage = async () => {
 
 // Audio handlers
 const handleAudioDataAvailable = async (event: BlobEvent) => {
-  if (event.data.size > 0 && !isAudioEnded.value) {
+  // Guard: Only send audio if STT is actively listening and audio hasn't ended
+  if (
+    event.data.size > 0 &&
+    !isAudioEnded.value &&
+    sttListening.value &&
+    isAudioRecording.value
+  ) {
     if (!firstAudioChunkSent.value) {
       await sendAudioMessage(
         WebSocketEventType.EVENT_AUDIO_START,
@@ -310,6 +446,21 @@ const handleAudioDataAvailable = async (event: BlobEvent) => {
 
 const handleStartAudio = async () => {
   try {
+    // Initialize AudioContext when user starts recording (natural user interaction)
+    try {
+      await initAudioContext();
+
+      // Trigger user interaction to enable audio playback
+      await handleUserInteraction();
+
+      await ensureAudioContextRunning();
+    } catch (error) {
+      console.warn(
+        "🎵 AudioContext initialization failed, but continuing with recording:",
+        error
+      );
+    }
+
     firstAudioChunkSent.value = false;
     await startAudioRecording(handleAudioDataAvailable);
   } catch (e) {
@@ -320,6 +471,9 @@ const handleStartAudio = async () => {
 // Lifecycle
 onUnmounted(() => {
   cleanupAudio();
+
+  // Clear all pending audio state to prevent memory leaks
+  clearPendingAudio();
 });
 </script>
 
@@ -452,12 +606,12 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 20%;
+  height: 100%;
 }
 
 .wave-bar {
   background-color: var(--rds-waveform-bg);
-  transition: height 0.2s ease;
+  transition: height 0.2s ease-out;
 }
 
 .manual-input-fallback {

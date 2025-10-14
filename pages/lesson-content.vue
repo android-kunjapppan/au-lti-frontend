@@ -26,8 +26,8 @@
               v-if="showSuggestionBox && isChatbotDrawerOpen"
               :content="suggestion.data"
               :disabled="suggestion.isLoading" />
-            <MicrophoneInput
-              :is-active="!isSubmitButtonVisible && !isMicrophoneDisabled" />
+            <MicrophoneInput :is-active="!isMicrophoneDisabled" />
+
             <SuggestionBar
               @on-suggestion-click="handleShowSuggestion"
               :is-active="showSuggestionBox || suggestion.isLoading"
@@ -42,7 +42,7 @@
         </div>
         <SideBar
           :class="sideBarClasses"
-          :is-input-disabled="isSubmitButtonVisible"
+          :is-input-disabled="isInputDisabled"
           class="side-bar" />
       </div>
     </div>
@@ -59,6 +59,7 @@ import {
 } from "../stores/messageStore";
 import { useAvatarStore } from "../stores/useAvatarStore";
 import {
+  DEFAULT_REQUEST_TIMEOUT_LENGTH,
   WebSocketEventType,
   WebSocketTextRequestType,
 } from "../utils/constants";
@@ -66,42 +67,53 @@ import {
 import { onUnmounted } from "vue";
 import { useLessonOverview } from "~/composables/useLessonOverview";
 import { useTTSAudioManager } from "~/composables/useTTSAudioManager";
+
 definePageMeta({
-  middleware: "conversation-auth",
+  middleware: ["conversation-auth", "test-navigation"],
 });
 const avatarStore = useAvatarStore();
 const { audioElement } = storeToRefs(avatarStore);
 const appStore = useAppStore();
-const { isChatbotDrawerOpen, isLoadingUserInfo } = storeToRefs(appStore);
+const { isChatbotDrawerOpen, isLoadingUserInfo, isTest } =
+  storeToRefs(appStore);
 const { startConversation, isStartConversationLoading } =
   useConversationManager();
 const messageStore = useMessageStore();
-const { responsePairCount, isSubmitted, minRequiredPair, isBotResponding } =
-  storeToRefs(messageStore);
+const { fetchLessonOverview } = useLessonOverview();
 
-// Get lesson overview for lessonId
-const { getLessonId } = useLessonOverview();
+const {
+  responsePairCount,
+  isSubmitted,
+  minRequiredPair,
+  isBotResponding,
+  isSubmitting,
+} = storeToRefs(messageStore);
 
 // Initialize TTS audio manager
 const ttsAudioManager = useTTSAudioManager();
 
-// Computed property to determine if submit button is visible
-const isSubmitButtonVisible = computed(() => {
-  // Check if max attempts reached
-  if (appStore.isMaxAttemptsReached) {
-    return false; // Hide submit button when max attempts reached
-  }
-
+// Single source of truth for submit eligibility
+const canSubmit = computed(() => {
   return (
-    responsePairCount.value === minRequiredPair.value &&
+    responsePairCount.value >= (minRequiredPair.value ?? 0) &&
     !isSubmitted.value &&
-    !isBotResponding.value
+    !appStore.isMaxAttemptsReached
   );
 });
 
-// Computed property to determine if microphone should be disabled
+// Input disabled state
+const isInputDisabled = computed(() => {
+  return isTest.value && canSubmit.value;
+});
+
+// Optimized: Microphone disabled state
 const isMicrophoneDisabled = computed(() => {
-  return appStore.isMaxAttemptsReached;
+  return (
+    appStore.isMaxAttemptsReached ||
+    isInputDisabled.value ||
+    isSubmitting.value ||
+    isBotResponding.value
+  );
 });
 
 // Show alert when max attempts reached
@@ -130,33 +142,36 @@ const suggestion = computed(() => messageStore.getSuggestion());
 let suggestionTimeout: NodeJS.Timeout | null = null;
 
 const handleShowSuggestion = async () => {
-  if (suggestion.value.isLoading) return;
+  if (suggestion.value.isLoading) {
+    return;
+  }
 
   try {
+    // Set flag to prevent generic websocket errors
+    appStore.setWebsocketRequestInProgress(true);
+
+    // Generate a unique ID for the suggestion request
+    const suggestionId = crypto.randomUUID();
+
     messageStore.clearSuggestion();
-    messageStore.setIsSuggestionLoading(true);
+    messageStore.setIsSuggestionLoading(true, suggestionId);
 
     // Set 2-minute timeout for suggestion request
-    suggestionTimeout = setTimeout(
-      () => {
-        messageStore.setIsSuggestionLoading(false);
-        appStore.addAlert("Suggestion request timed out. Please try again.");
-      },
-      2 * 60 * 1000
-    );
+    suggestionTimeout = setTimeout(() => {
+      messageStore.setIsSuggestionLoading(false);
+      appStore.addAlert("Suggestion request timed out. Please try again.");
+    }, DEFAULT_REQUEST_TIMEOUT_LENGTH);
 
     // Don't show suggestion box yet - wait for first response
-
     const conversationString = createConversationString();
 
-    await submitSuggestionRequest(conversationString);
+    await submitSuggestionRequest(conversationString, suggestionId);
   } catch (error) {
     console.error("Error getting suggestion:", error);
-    messageStore.setIsSuggestionLoading(false);
+    // Set suggestion error with 1s delay - don't clear loading immediately
     messageStore.setSuggestionError(
       "Failed to get suggestion. Please try again."
     );
-    appStore.addAlert("Failed to get suggestion. Please try again.");
     if (suggestionTimeout) {
       clearTimeout(suggestionTimeout);
       suggestionTimeout = null;
@@ -179,7 +194,10 @@ const createConversationString = (): string => {
   return conversationString.trim();
 };
 
-const submitSuggestionRequest = async (conversationString: string) => {
+const submitSuggestionRequest = async (
+  conversationString: string,
+  suggestionId: string
+) => {
   try {
     if (appStore.statusWS !== "OPEN") {
       await appStore.openWS();
@@ -191,9 +209,6 @@ const submitSuggestionRequest = async (conversationString: string) => {
         throw new Error("Unable to get user ID");
       }
 
-      // Generate a unique ID for the suggestion request
-      const suggestionId = crypto.randomUUID();
-
       // Store the suggestion ID in Pinia
       appStore.setSuggestion(suggestionId, "");
 
@@ -203,35 +218,33 @@ const submitSuggestionRequest = async (conversationString: string) => {
         throw new Error("No conversation ID available");
       }
 
-      // Get selectedTemplate from sessionStorage
-      const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-      if (!selectedTemplate) {
+      // Get selectedTemplate
+      if (!appStore.selectedTemplate) {
         appStore.addAlert(
           "Missing selectedTemplate, please reload or try again"
         );
         return;
       }
 
-      appStore.sendWS(
-        JSON.stringify({
-          event_type: WebSocketEventType.EVENT_TEXT_START,
-          user_id: userId,
-          conversation_id: conversationId,
-          message_id: suggestionId,
-          selectedTemplate,
-          data: {
-            request_type: WebSocketTextRequestType.SUGGESTION,
-            text: conversationString,
-            language: "es",
-            lessonId: getLessonId(),
-          },
-        })
-      );
+      const wsMessage = {
+        event_type: WebSocketEventType.EVENT_TEXT_START,
+        user_id: userId,
+        conversation_id: conversationId,
+        message_id: suggestionId,
+        selectedTemplate: appStore.selectedTemplate,
+        data: {
+          request_type: WebSocketTextRequestType.SUGGESTION,
+          text: conversationString,
+          language: "es",
+        },
+      };
+
+      appStore.sendWS(JSON.stringify(wsMessage));
     } else {
       throw new Error("WebSocket connection not available");
     }
   } catch (error) {
-    console.error("Error submitting suggestion request:", error);
+    console.error("Error in submitSuggestionRequest:", error);
     if (suggestionTimeout) {
       clearTimeout(suggestionTimeout);
       suggestionTimeout = null;
@@ -248,7 +261,29 @@ watch(suggestion, (newSuggestion) => {
   if (!showSuggestionBox.value && newSuggestion.data.trim().length > 10) {
     showSuggestionBox.value = true;
   }
+
+  // Clear timeout when suggestion is received successfully
+  if (
+    !newSuggestion.isLoading &&
+    newSuggestion.data.trim().length > 0 &&
+    suggestionTimeout
+  ) {
+    clearTimeout(suggestionTimeout);
+    suggestionTimeout = null;
+  }
 });
+
+// Watch for suggestion loading state changes to clear timeout when request completes
+watch(
+  () => suggestion.value.isLoading,
+  (newValue, oldValue) => {
+    // If loading changed from true to false, clear the local timeout
+    if (oldValue && !newValue && suggestionTimeout) {
+      clearTimeout(suggestionTimeout);
+      suggestionTimeout = null;
+    }
+  }
+);
 
 interface Props {
   isErrorPage?: boolean;
@@ -265,6 +300,7 @@ const contentAreaClasses = computed(() => {
 });
 
 onMounted(async () => {
+  // Check navigation restrictions first
   await avatarStore.loadModel();
   avatarStore.setupAudioAnalysis();
 
@@ -278,6 +314,8 @@ onMounted(async () => {
     if (!userData) {
       appStore.addAlert("User info not found");
     }
+    // Fetch lesson overview to set avatar name
+    await fetchLessonOverview();
     await startConversation(userData);
   } catch (error) {
     appStore.addAlert("Error starting conversation:");
@@ -285,7 +323,7 @@ onMounted(async () => {
 
   // Listen for websocket responses
   if (appStore.ws) {
-    appStore.ws.addEventListener("message", (event) => {
+    appStore.ws.addEventListener("message", (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
         // Handle suggestion responses, suggestion end events, and suggestion errors only

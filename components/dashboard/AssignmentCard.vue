@@ -33,20 +33,20 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { getLatestSubmissionDate } from "~/utils/dateUtils";
 import { calculateTotalPracticeTime } from "~/utils/timeUtils";
 
-defineProps({
-  assignment: {
-    type: Object,
-    required: true,
-  },
-});
+interface Props {
+  assignment: ProcessedAssignment;
+}
+defineProps<Props>();
 
-defineEmits(["show-details"]);
+defineEmits<{
+  "show-details": [Assignment];
+}>();
 
-function formatAssignmentDate(assignment) {
+function formatAssignmentDate(assignment: ProcessedAssignment) {
   return getLatestSubmissionDate(assignment.submissions, "time");
 }
 </script>

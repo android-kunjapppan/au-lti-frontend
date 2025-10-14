@@ -27,6 +27,7 @@ html {
   --rds-label-hover-bg: rgba(25, 25, 25, 0.1);
   --rds-z-index-100: 100;
   --rds-z-index-footer: 900;
+  --rds-z-index-tooltip: 1000;
   --rds-border-radius-pill: 100px;
   --rds-success-hover: #4a7c0e;
   --rds-success-rgb: 74, 124, 14;
@@ -41,12 +42,13 @@ html {
     #fff6e2 98.52%
   );
   --rds-footer-bg: #fffcf5;
+  --rds-footer-progress-bar-bg: linear-gradient(0deg, #a4eb4c 0%, #65a01b 100%);
   --rds-disclaimer-bg: #f4edd4;
   --rds-section-bg: rgba(0, 0, 0, 0.02);
   --rds-suggestion-box: rgba(233, 245, 219, 1);
   --rds-scrollbar-thumb: #d3e5bd;
   --standard-transition-duration: 0.25s;
-  --y-container-spacing: 100px;
+  --y-container-spacing: 140px;
 
   --btn-hover-bg: #f4edd4;
 
@@ -76,6 +78,7 @@ html {
   --mic-waveform-shadow: rgba(0, 0, 0, 0.16);
 
   --mic-icon-white: rgba(250, 250, 250, 1);
+  --trade-mark-logo-shadow: 0px 2px 4px rgba(0, 0, 0, 0.6);
 }
 
 /* Force override the CSS custom property */
@@ -161,14 +164,17 @@ body {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
 }
+
 .spin-slow {
   animation: spinDots 5s linear infinite;
   transform-origin: center center;
 }
+
 .spin-fast {
   animation: spinDots 1.5s linear infinite;
   transform-origin: center center;

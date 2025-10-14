@@ -1,6 +1,11 @@
 <template>
   <client-only>
-    <DotLottieVue autoplay :class="props.class" :src="src" ref="playerRef" />
+    <DotLottieVue
+      :layout="{ fit: 'fit-height' }"
+      autoplay
+      :class="props.class"
+      :src="src"
+      ref="playerRef" />
   </client-only>
 </template>
 

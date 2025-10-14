@@ -43,6 +43,13 @@ function parseDateWithTimezone(
   return result;
 }
 
+export type DateFormat =
+  | "short"
+  | "long"
+  | "time"
+  | "full"
+  | "timeOnly"
+  | "dateOnly";
 /**
  * Format date and time consistently across the application
  * @param {string | Date} dateString - Date string or Date object
@@ -51,7 +58,7 @@ function parseDateWithTimezone(
  */
 export function formatDateTime(
   dateString: string | Date | null | undefined,
-  format: "short" | "long" | "time" | "full" | "timeOnly" | "dateOnly" = "short"
+  format: DateFormat = "short"
 ): string {
   if (!dateString || dateString === "N/A") return "N/A";
 

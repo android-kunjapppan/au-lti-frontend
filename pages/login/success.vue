@@ -20,7 +20,6 @@ import { isJWTTokenValid } from "~/utils/auth";
 const route = useRoute();
 const runtimeConfig = useRuntimeConfig();
 const appStore = useAppStore();
-const appStoreRef = storeToRefs(appStore);
 const { lbJwt } = storeToRefs(appStore);
 
 const tokenIsValid = computed(() => {
@@ -74,7 +73,7 @@ onMounted(async () => {
     const asuriteJWT = route.query["projectWebToken"];
 
     // Store ASURITE JWT in Pinia store
-    appStoreRef.lbJwt.value = asuriteJWT;
+    lbJwt.value = asuriteJWT;
 
     try {
       // Validate JWT token and fetch user info directly

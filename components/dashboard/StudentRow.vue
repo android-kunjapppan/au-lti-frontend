@@ -80,23 +80,24 @@
   </template>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AssignmentCard from "./AssignmentCard.vue";
 
-defineProps({
-  students: {
-    type: Array,
-    required: true,
-  },
-  openAccordionIndex: {
-    type: Number,
-    default: null,
-  },
+interface Props {
+  students: ProcessedStudent[];
+  openAccordionIndex?: number | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  openAccordionIndex: null,
 });
 
-defineEmits(["toggle-accordion", "show-assignment-details"]);
+const emits = defineEmits<{
+  "toggle-accordion": [index: number];
+  "show-assignment-details": [assignment: ProcessedAssignment];
+}>();
 
-function formatDate(dateString) {
+function formatDate(dateString: string) {
   if (dateString === "N/A" || dateString === "No submissions")
     return dateString;
   // Since getLatestSubmissionDate already returns a formatted string, just return it as-is

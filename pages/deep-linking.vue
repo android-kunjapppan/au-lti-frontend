@@ -16,15 +16,16 @@
   </div>
 </template>
 
-<script setup>
-import { useRuntimeConfig } from "#app";
-import { onMounted, ref } from "vue";
-
+<script setup lang="ts">
+interface ModuleTemplate {
+  ModuleTemplate_UUID: string;
+  ModuleTitle: string;
+}
 const config = useRuntimeConfig();
 
-const ltik = ref(null);
-const moduleTemplates = ref([]);
-const selectedTemplate = ref(null);
+const ltik = ref<string | null>();
+const moduleTemplates = ref<ModuleTemplate[]>([]);
+const selectedTemplate = ref<string>();
 
 const handleSubmit = async () => {
   try {
@@ -87,7 +88,7 @@ onMounted(async () => {
       throw new Error("Failed to fetch module templates");
     }
 
-    const templates = await response.json();
+    const templates = (await response.json()) as ModuleTemplate[];
     moduleTemplates.value = templates;
 
     if (templates.length > 0) {

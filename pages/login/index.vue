@@ -1,6 +1,7 @@
 <template>
   <NuxtLayout name="login">
-    <div class="sign-in-container">
+    <LoadingSpinner v-if="isLoadingUserInfo" />
+    <div class="sign-in-container" v-else>
       <SignInCard
         :heading="cardConfig.heading"
         :subheading="cardConfig.subheading"
@@ -17,19 +18,22 @@
 <script setup lang="ts">
 import { isJWTTokenValid } from "~/utils/auth";
 
+const { startOAuthFlow } = useCanvasOAuth();
 const runtimeConfig = useRuntimeConfig();
 const route = useRoute();
-const router = useRouter();
 const appStore = useAppStore();
-const appStoreRef = storeToRefs(appStore);
+const { lbJwt, userInfo, alertQueue, isLoadingUserInfo } =
+  storeToRefs(appStore);
 
 // State management for different sign-in scenarios
-const currentState = ref<"loading" | "popup-prompt" | "error">("popup-prompt");
+const currentState = ref<"loading" | "login-prompt" | "oauth-prompt" | "error">(
+  "login-prompt"
+);
 
 // Computed configuration for SignInCard based on current state
 const cardConfig = computed(() => {
   switch (currentState.value) {
-    case "popup-prompt":
+    case "login-prompt":
       return {
         heading: "Let's get you signed in",
         subheading:
@@ -39,6 +43,18 @@ const cardConfig = computed(() => {
         isSuccessState: false,
         proceedButtonText: "Sign in",
         onProceed: handleLoginClick,
+        onTryAgain: undefined,
+      };
+    case "oauth-prompt":
+      return {
+        heading: "One last step",
+        subheading:
+          "Make sure you have pop-ups allowed for this site, so everything works properly.",
+        showProceedButton: true,
+        showTryAgainButton: false,
+        isSuccessState: false,
+        proceedButtonText: "Grant Canvas Access",
+        onProceed: handleOAuthClick,
         onTryAgain: undefined,
       };
     case "error":
@@ -85,6 +101,21 @@ const handleLoginClick = () => {
 
   // Start polling to check if login was successful
   startPollingForLogin(popup);
+};
+
+const handleOAuthClick = async () => {
+  try {
+    await startOAuthFlow(); // Show OAuth popup
+    await appStore.fetchUserInfo(); // Try again
+
+    if (!userInfo.value) {
+      appStore.addAlert("User info not found after OAuth");
+      throw new Error("User info not found after OAuth");
+    }
+  } catch (oauthError) {
+    console.warn("OAuth popup cancelled or failed:", oauthError);
+    return; // Exit gracefully – don't proceed
+  }
 };
 
 // Polling mechanism to detect successful login
@@ -136,8 +167,8 @@ const startPollingForLogin = (popup: Window) => {
         popup.close();
       }
 
-      // Store JWT in app store (watcher will handle state change)
-      appStoreRef.lbJwt.value = e.newValue;
+      // ✅ lbJwt.value is already updated automatically!
+      // No manual assignment needed
 
       // Clear polling
       clearInterval(pollingInterval.value!);
@@ -154,38 +185,37 @@ const startPollingForLogin = (popup: Window) => {
 const handleTryAgain = () => {
   // Simply show the sign-in card when "Try again" is clicked
   // Let the user decide if popups are working by clicking "Sign in"
-  currentState.value = "popup-prompt";
+  if (!userInfo.value) currentState.value = "oauth-prompt";
+  else currentState.value = "login-prompt";
 };
 
 // Watch for JWT token changes to determine state
 watch(
-  appStoreRef.lbJwt,
+  lbJwt,
   async (newValue) => {
     if (isJWTTokenValid(newValue)) {
-      // Redirect to success page instead of showing success state here
-      await router.push("/login/success");
+      await appStore.fetchUserInfoWithOAuth();
+      if (userInfo.value) await navigateTo("/login/success");
+      else currentState.value = "oauth-prompt";
     }
   },
   { immediate: false } // Don't run immediately on page load
 );
 
-// Check for popup blocker on mount
-onMounted(() => {
-  // Start with the sign-in card by default
-  currentState.value = "popup-prompt";
-
-  // Check if user is coming from Canvas (has ltik token)
-  const hasLtik = !!route.query.ltik;
-
-  if (hasLtik) {
-    // User is coming from Canvas, show appropriate message
-    currentState.value = "popup-prompt";
-  }
-});
+// watch for userInfo change indicating that the user has granted OAuth access
+watch(
+  userInfo,
+  async (newValue) => {
+    if (newValue && isJWTTokenValid(lbJwt.value)) {
+      await navigateTo("/login/success");
+    }
+  },
+  { immediate: false, deep: false }
+);
 
 // Handle error states from the app store
 watch(
-  appStoreRef.alertQueue,
+  alertQueue,
   (alerts) => {
     if (alerts.length > 0) {
       const lastAlert = alerts[alerts.length - 1];
@@ -196,6 +226,20 @@ watch(
   },
   { deep: true }
 );
+
+// Check for popup blocker on mount
+onMounted(async () => {
+  // Start with the sign-in card by default
+  currentState.value = "login-prompt";
+
+  // Check if user is coming from Canvas (has ltik token)
+  const hasLtik = !!route.query.ltik;
+
+  if (hasLtik) {
+    // User is coming from Canvas, show appropriate message
+    currentState.value = "login-prompt";
+  }
+});
 
 // Clean up polling on component unmount
 onUnmounted(() => {

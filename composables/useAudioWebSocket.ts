@@ -24,9 +24,8 @@ export const useAudioWebSocket = () => {
 
       const base64Audio = await blobToBase64(audioBlob);
 
-      // Get selectedTemplate from sessionStorage
-      const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-      if (!selectedTemplate) {
+      // Get selectedTemplate
+      if (!appStore.selectedTemplate) {
         appStore.addAlert(
           "Missing selectedTemplate, please reload or try again"
         );
@@ -38,7 +37,7 @@ export const useAudioWebSocket = () => {
         user_id: appStore.getUserId(),
         conversation_id: conversationId,
         message_id: sessionId,
-        selectedTemplate,
+        selectedTemplate: appStore.selectedTemplate,
         data: {
           request_type: WebSocketTextRequestType.USER_AUDIO,
           audio: base64Audio,
@@ -61,9 +60,8 @@ export const useAudioWebSocket = () => {
         base64Audio = await blobToBase64(audioBlob);
       }
 
-      // Get selectedTemplate from sessionStorage
-      const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-      if (!selectedTemplate) {
+      // Get selectedTemplate
+      if (!appStore.selectedTemplate) {
         appStore.addAlert(
           "Missing selectedTemplate, please reload or try again"
         );
@@ -75,7 +73,7 @@ export const useAudioWebSocket = () => {
         user_id: appStore.getUserId(),
         conversation_id: conversationId,
         message_id: sessionId,
-        selectedTemplate,
+        selectedTemplate: appStore.selectedTemplate,
         data: {
           request_type: WebSocketTextRequestType.USER_AUDIO,
           audio: base64Audio,

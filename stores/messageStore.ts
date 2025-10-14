@@ -1,6 +1,7 @@
 import { StorageSerializers, useStorage } from "@vueuse/core";
 import { v4 as uuid } from "uuid";
 import type { Optional } from "~/types/types";
+import { DEFAULT_REQUEST_TIMEOUT_LENGTH } from "~/utils/constants";
 
 interface ConversationMessage {
   text?: string;
@@ -46,6 +47,7 @@ export const useMessageStore = defineStore("messages", () => {
   const isSubmitted = ref<boolean>(false);
   const isSubmitting = ref<boolean>(false);
   const submitSuccess = ref<boolean>(false);
+  const activeSuggestionRequestId = ref<string | null>(null);
 
   const responsePairCount = computed(() => {
     if (!messages.value?.size) return 0;
@@ -53,7 +55,7 @@ export const useMessageStore = defineStore("messages", () => {
     let validUserCount = 0;
     let validBotCount = 0;
 
-    for (const [, message] of messages.value.entries()) {
+    for (const [messageId, message] of messages.value.entries()) {
       if (message.type === "user") {
         validUserCount += 1;
       } else if (
@@ -61,7 +63,9 @@ export const useMessageStore = defineStore("messages", () => {
         !(
           typeof message.text === "string" &&
           message.text.includes("Message failed")
-        )
+        ) &&
+        !message.isLoading && // Only count bot messages that are not currently loading
+        !messagesWithErrors.value.has(messageId) // Exclude messages that have errors (need retry)
       ) {
         validBotCount += 1;
       }
@@ -105,7 +109,16 @@ export const useMessageStore = defineStore("messages", () => {
     data: string;
   }>({ isLoading: false, data: "", error: undefined });
 
-  const setSuggestion = (value: string) => {
+  const setSuggestion = (value: string, messageId?: string) => {
+    // Ignore stale chunks from old requests
+    if (
+      messageId &&
+      activeSuggestionRequestId.value &&
+      messageId !== activeSuggestionRequestId.value
+    ) {
+      return;
+    }
+
     suggestion.value = {
       isLoading: suggestion.value.isLoading, // Preserve current loading state
       data: suggestion.value.data + value,
@@ -115,13 +128,20 @@ export const useMessageStore = defineStore("messages", () => {
 
   const clearSuggestion = () => {
     suggestion.value = { isLoading: false, data: "", error: undefined };
+    activeSuggestionRequestId.value = null;
   };
 
   const getSuggestion = () => {
     return suggestion.value;
   };
 
-  const setIsSuggestionLoading = (isLoading: boolean) => {
+  const setIsSuggestionLoading = (isLoading: boolean, messageId?: string) => {
+    if (isLoading && messageId) {
+      activeSuggestionRequestId.value = messageId;
+    } else if (!isLoading) {
+      activeSuggestionRequestId.value = null;
+    }
+
     suggestion.value = {
       isLoading,
       data: suggestion.value?.data || "",
@@ -129,14 +149,41 @@ export const useMessageStore = defineStore("messages", () => {
     };
   };
 
-  const setSuggestionError = (error: string) => {
-    suggestion.value = {
-      error,
-      isLoading: false,
-      data: "",
-    };
+  const getActiveSuggestionRequestId = () => {
+    return activeSuggestionRequestId.value;
+  };
+
+  const setSuggestionError = (error: string, addAlert: boolean = true) => {
+    // Add alert immediately if requested
+    if (addAlert) {
+      appStore.addAlert(error);
+    }
+
+    // Add 1 second delay before stopping the loader
+    setTimeout(() => {
+      suggestion.value = {
+        error,
+        isLoading: false,
+        data: "",
+      };
+      activeSuggestionRequestId.value = null;
+    }, 1000);
   };
   // suggestion end
+
+  // TTS error handling with delay
+  const setTTSError = (messageId: string, error: string) => {
+    // Add alert immediately
+    appStore.addAlert(error);
+
+    // Add 1 second delay before stopping the loader
+    setTimeout(() => {
+      // Clear TTS request tracking
+      appStore.clearTTSRequest(messageId);
+      // Add message error
+      addMessageError(messageId);
+    }, 1000);
+  };
 
   // Computed: true if any bot message is loading and not complete
   const isBotResponding = computed(() => {
@@ -145,15 +192,15 @@ export const useMessageStore = defineStore("messages", () => {
     }
 
     // Check all bot messages to see if any are currently loading
-    for (const message of messages.value.values()) {
-      if (message.type === "bot") {
-        if (message.isLoading === true) {
-          return true;
-        }
+    const loadingBotMessages: string[] = [];
+
+    for (const [messageId, message] of messages.value.entries()) {
+      if (message.type === "bot" && message.isLoading === true) {
+        loadingBotMessages.push(messageId);
       }
     }
 
-    return false;
+    return loadingBotMessages.length > 0;
   });
 
   // Set Max Response Pair
@@ -178,25 +225,19 @@ export const useMessageStore = defineStore("messages", () => {
       messages.value = new Map<string, UserMessage | BotMessage>();
 
     const id = args?.id || uuid();
-    messages.value.set(id, {
+    const message = {
       ...args?.data,
       type,
-    } satisfies UserMessage | BotMessage);
+    } satisfies UserMessage | BotMessage;
+
+    messages.value.set(id, message);
+
     return id;
   };
 
   // Track feedback request
   const addFeedbackRequest = (messageId: string) => {
-    messagesWaitingForFeedback.value.add(messageId);
-    // Also update the new feedback state system
     setIsFeedbackLoading(messageId, true);
-
-    setTimeoutForOperation(`feedback-${messageId}`, () => {
-      messagesWaitingForFeedback.value.delete(messageId);
-      addMessageError(messageId);
-      const appStore = useAppStore();
-      appStore.addAlert("Feedback request timed out. Please try again.");
-    });
   };
 
   // Check if message is waiting for feedback
@@ -214,8 +255,6 @@ export const useMessageStore = defineStore("messages", () => {
   // Remove feedback request when feedback is received
   const removeFeedbackRequest = (messageId: string) => {
     messagesWaitingForFeedback.value.delete(messageId);
-    clearTimeoutForOperation(`feedback-${messageId}`);
-    // Also update the new feedback state system
     setIsFeedbackLoading(messageId, false);
   };
 
@@ -235,7 +274,6 @@ export const useMessageStore = defineStore("messages", () => {
   };
 
   // Unified timeout management
-  const TIMEOUT_DURATION = 2 * 60 * 1000; // 2 minutes
   const timeouts = new Map<string, NodeJS.Timeout>();
 
   // Helper function to set timeout
@@ -251,7 +289,7 @@ export const useMessageStore = defineStore("messages", () => {
     const timeout = setTimeout(() => {
       callback();
       timeouts.delete(operationId);
-    }, TIMEOUT_DURATION);
+    }, DEFAULT_REQUEST_TIMEOUT_LENGTH);
 
     timeouts.set(operationId, timeout);
   };
@@ -275,9 +313,18 @@ export const useMessageStore = defineStore("messages", () => {
 
       if (isLoading) {
         setTimeoutForOperation(`message-${messageId}`, () => {
-          message.isLoading = false;
-          messages.value?.set(messageId, message);
-          addMessageError(messageId);
+          const currentMessage = messages.value?.get(messageId);
+          if (
+            currentMessage &&
+            currentMessage.isLoading &&
+            !currentMessage.isComplete
+          ) {
+            setMessageComplete(messageId, true);
+          } else {
+            message.isLoading = false;
+            messages.value?.set(messageId, message);
+            addMessageError(messageId);
+          }
         });
       } else {
         clearTimeoutForOperation(`message-${messageId}`);
@@ -380,7 +427,11 @@ export const useMessageStore = defineStore("messages", () => {
     [responsePairCount, minRequiredPair, isBotResponding],
     async ([responsePairCount, minRequiredPair, isBotResponding]) => {
       if (!isBotResponding && minRequiredPair) {
-        const newProgress = (responsePairCount / minRequiredPair) * 100;
+        // Cap progress at 100% to prevent breaking when responsePairCount exceeds minRequiredPair
+        const newProgress = Math.min(
+          (responsePairCount / minRequiredPair) * 100,
+          100
+        );
         // waiting for appStore to load
         await nextTick();
         appStore.updateProgress(newProgress);
@@ -464,11 +515,26 @@ export const useMessageStore = defineStore("messages", () => {
   };
 
   // Set translation error for a message
-  const setTranslationError = (messageId: string, error: string) => {
-    translationState.value.set(messageId, {
-      error,
-      isLoading: false,
-    });
+  const setTranslationError = (
+    messageId: string,
+    error: string,
+    addAlert: boolean = true
+  ) => {
+    // Add alert immediately if requested
+    if (addAlert) {
+      appStore.addAlert(error);
+    }
+
+    // Add 1 second delay before stopping the loader
+    setTimeout(() => {
+      translationState.value.set(messageId, {
+        error,
+        isLoading: false,
+      });
+      // Clear any pending timeouts when an error is set
+      clearTimeoutForOperation(`translation-${messageId}`);
+      clearTimeoutForOperation(`translation-ws-${messageId}`);
+    }, 1000);
   };
 
   // Get translation error for a message
@@ -491,7 +557,6 @@ export const useMessageStore = defineStore("messages", () => {
         messageId,
         "Translation timed out. Please try again."
       );
-      const appStore = useAppStore();
       appStore.addAlert("Translation request timed out. Please try again.");
     });
   };
@@ -514,17 +579,33 @@ export const useMessageStore = defineStore("messages", () => {
           isLoading: false,
           error: "Feedback request timed out. Please try again.",
         });
-        const appStore = useAppStore();
         appStore.addAlert("Feedback request timed out. Please try again.");
       });
+    } else {
+      // Clear timeout when loading is set to false
+      clearTimeoutForOperation(`feedback-${messageId}`);
     }
   };
 
-  const setFeedbackError = (messageId: string, error: string) => {
-    feedbackState.value.set(messageId, {
-      error,
-      isLoading: false,
-    });
+  const setFeedbackError = (
+    messageId: string,
+    error: string,
+    addAlert: boolean = true
+  ) => {
+    // Add alert immediately if requested
+    if (addAlert) {
+      appStore.addAlert(error);
+    }
+
+    // Add 1 second delay before stopping the loader
+    setTimeout(() => {
+      feedbackState.value.set(messageId, {
+        error,
+        isLoading: false,
+      });
+      // Clear any pending timeouts when an error is set
+      clearTimeoutForOperation(`feedback-${messageId}`);
+    }, 1000);
   };
 
   // Get feedback state for a message
@@ -537,21 +618,13 @@ export const useMessageStore = defineStore("messages", () => {
     feedbackState.value.delete(messageId);
   };
 
-  // Set feedback loading with timeout
+  // Set feedback loading with timeout (unified with setIsFeedbackLoading)
   const setFeedbackLoadingWithTimeout = (messageId: string) => {
     setIsFeedbackLoading(messageId, true);
-    setTimeoutForOperation(`feedback-ws-${messageId}`, () => {
-      setFeedbackError(
-        messageId,
-        "Feedback request timed out. Please try again."
-      );
-      const appStore = useAppStore();
-      appStore.addAlert("Feedback request timed out. Please try again.");
-    });
   };
 
   const clearFeedbackTimeout = (messageId: string) => {
-    clearTimeoutForOperation(`feedback-ws-${messageId}`);
+    clearTimeoutForOperation(`feedback-${messageId}`);
   };
 
   // Helper function to find the most recent loading bot message
@@ -636,9 +709,7 @@ export const useMessageStore = defineStore("messages", () => {
       // Set loading state with timeout
       setMessageLoading(messageId, true);
 
-      // Get selectedTemplate from sessionStorage
-      const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-      if (!selectedTemplate) {
+      if (!appStore.selectedTemplate) {
         appStore.addAlert(
           "Missing selectedTemplate, please reload or try again"
         );
@@ -652,7 +723,7 @@ export const useMessageStore = defineStore("messages", () => {
           user_id: userId,
           conversation_id: getConversationId() as string,
           message_id: userMessageId,
-          selectedTemplate,
+          selectedTemplate: appStore.selectedTemplate,
           data: {
             request_type: "user-text",
             text: userMessageText,
@@ -750,5 +821,7 @@ export const useMessageStore = defineStore("messages", () => {
     setIsSuggestionLoading,
     setSuggestionError,
     clearSuggestion,
+    getActiveSuggestionRequestId,
+    setTTSError,
   };
 });

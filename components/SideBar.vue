@@ -32,10 +32,19 @@
       <div class="chatbox w-100 h-100" v-show="isChatbotDrawerOpen">
         <div
           class="chatbox-body px-space-md pt-space-sm mh-100 w-100 h-100 flex-grow-1 d-flex flex-column overflow-y-auto">
+          <!-- Show empty state when no messages -->
+          <EmptyTranscriptScreen
+            v-if="
+              !messageStoreRef.messages.value ||
+              messageStoreRef.messages.value.size === 0
+            "
+            class="flex-grow-1 d-flex align-items-center justify-content-center" />
+
+          <!-- Show messages when they exist -->
           <div
             ref="messagesContainer"
             class="messages flex-grow-1 mh-100 w-100 overflow-y-auto"
-            v-if="messageStoreRef.messages.value">
+            v-else>
             <template
               v-for="[id, msg] in messageStoreRef.messages.value.entries()"
               :key="id">
@@ -90,21 +99,15 @@ import {
   watch,
   type ComponentPublicInstance,
 } from "vue";
-import { lipSyncStatus } from "~/composables/useAudioAnalysis";
+import { useAudioPlayback } from "~/composables/useAudioPlayback";
 import { useContentKey } from "~/composables/useContentKey";
-import { useMorphTargets } from "~/composables/useMorphTargets";
-import { useTTSAudioManager } from "~/composables/useTTSAudioManager";
 import { useAudioStore } from "~/stores/useAudioStore";
-import { analyzeAudioData } from "~/utils/audioAnalysis";
-import { AUDIO_ANALYSIS_CONFIG } from "~/utils/constants";
+import { useChatbotStore } from "~/stores/useChatbotStore";
+import { SupportedLang } from "~/utils/constants";
 import Tooltip from "../components/ToolTip.vue";
 import { useAppStore } from "../stores/appStore";
 import { useMessageStore } from "../stores/messageStore";
-import type {
-  FeedbackConversationRequestBody,
-  TranslationConversationRequestBody,
-  UserTextConversationRequestBody,
-} from "../types/types";
+import type { UserTextConversationRequestBody } from "../types/types";
 import {
   ERROR_MESSAGES,
   WebSocketEventType,
@@ -113,11 +116,6 @@ import {
 
 interface Props {
   isInputDisabled?: boolean;
-}
-
-interface ExtendedAudioElement extends HTMLAudioElement {
-  mozPreservesPitch?: boolean;
-  webkitPreservesPitch?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -171,28 +169,43 @@ const tooltipStyles = ref({});
 
 // State to control the visibility of the chatbox
 const appStore = useAppStore();
-const { isChatbotDrawerOpen, userPrompt } = storeToRefs(appStore);
+const { isChatbotDrawerOpen, userPrompt, audioPlaybackSpeed } =
+  storeToRefs(appStore);
+
 const messageStore = useMessageStore();
 const messageStoreRef = storeToRefs(messageStore);
 
 // Fullscreen state for handling viewport changes
 const { isFullscreen } = useFullscreen();
 
-// Chat audio analysis for mouth movement
-const { updateMouthMovement } = useMorphTargets();
-let chatAudioContext: AudioContext | null = null;
-let chatAnalyser: AnalyserNode | null = null;
-let chatDataArray: Uint8Array<ArrayBuffer> | null = null;
-let chatLipSyncIntervalId: ReturnType<typeof setInterval> | null = null;
-let lastChatAmplitude = 0;
-const { stopAudio } = useTTSAudioManager();
-
-// State for stored audio playback
-const currentPlayingAudio = ref<{
-  messageId: string;
-  speed: "normal" | "slow";
-  audioElement: HTMLAudioElement;
-} | null>(null);
+// Initialize audio playback composable
+const audioPlayback = useAudioPlayback(
+  {
+    defaultSpeed: "normal",
+    enableLipSync: true,
+    volume: 0.8,
+    autoCleanup: true,
+  },
+  {
+    onPlayStart: (messageId: string, speed: "normal" | "slow") => {
+      messageStore.setAudioPlaying(messageId, true, speed);
+    },
+    onPlayEnd: (messageId: string, speed: "normal" | "slow") => {
+      messageStore.setAudioPlaying(messageId, false, speed);
+    },
+    onError: (messageId: string, error: string) => {
+      console.error("Audio playback error:", error);
+      appStore.addAlert(`Audio playback failed: ${error}`);
+    },
+    onLoadingChange: (messageId: string, isLoading: boolean) => {
+      const chatMessageRef = chatMessageRefs.value.get(messageId);
+      if (chatMessageRef && chatMessageRef.setPlayLoading) {
+        chatMessageRef.setPlayLoading(false, "normal");
+        chatMessageRef.setPlayLoading(false, "slow");
+      }
+    },
+  }
+);
 
 // Track if handleBotPlay is currently processing to prevent multiple rapid calls
 const isProcessingPlayRequest = ref(false);
@@ -202,14 +215,6 @@ const isProcessingPlayRequest = ref(false);
 const hasAnyPlayButtonLoading = computed(() => {
   return appStore.ttsRequestMessageIds?.size > 0;
 });
-
-// Forward declarations for audio analysis functions
-// eslint-disable-next-line prefer-const
-let setupChatAudioAnalysis: (audioElement: HTMLAudioElement) => Promise<void>;
-// eslint-disable-next-line prefer-const
-let startChatLipSyncLoop: () => void;
-// eslint-disable-next-line prefer-const
-let stopChatLipSyncLoop: () => void;
 
 // Ref to store ChatMessage component instances
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -238,14 +243,11 @@ const isMessagePlaying = (
   messageId: string,
   speed: "normal" | "slow"
 ): boolean => {
-  // Check both the local currentPlayingAudio state and the message store state
-  const isLocalPlaying =
-    currentPlayingAudio.value?.messageId === messageId &&
-    currentPlayingAudio.value?.speed === speed;
-
+  // Check both the audio playback composable state and the message store state
+  const isComposablePlaying = audioPlayback.isMessagePlaying(messageId, speed);
   const isStorePlaying = messageStore.isAudioPlaying(messageId, speed);
 
-  return isLocalPlaying || isStorePlaying;
+  return isComposablePlaying || isStorePlaying;
 };
 
 // Function to toggle the chatbox visibility
@@ -290,24 +292,33 @@ const sendMessage = async () => {
       });
 
       // Create initial bot message with loading state
+      // Set isLoading: true during creation to prevent race condition
+      // where WebSocket response arrives before setMessageLoading is called
       const botMessageId = messageStore.createMessage("bot", {
         data: {
           text: "",
           isComplete: false,
+          isLoading: true, // Set immediately to prevent duplicate bot message creation
         },
       });
 
-      // Get selectedTemplate from sessionStorage
-      const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-      if (!selectedTemplate) {
+      // Set loading state with timeout (still needed for timeout management)
+      messageStore.setMessageLoading(botMessageId, true);
+
+      // Set the current bot message ID in the WebSocket composable
+      // This ensures that finalizeBotMessage uses the correct bot message ID
+      // Only set if there isn't already a bot response in progress (prevent race condition)
+      if (!messageStore.isBotResponding) {
+        appStore.setCurrentBotMessageId(botMessageId);
+      }
+
+      // Get selectedTemplate
+      if (!appStore.selectedTemplate) {
         appStore.addAlert(
           "Missing selectedTemplate, please reload or try again"
         );
         return;
       }
-
-      // Set loading state with timeout
-      messageStore.setMessageLoading(botMessageId, true);
 
       appStore.sendWS(
         JSON.stringify({
@@ -315,7 +326,7 @@ const sendMessage = async () => {
           user_id: userId,
           conversation_id: messageStore.getConversationId() as string,
           message_id: userMessageId,
-          selectedTemplate,
+          selectedTemplate: appStore.selectedTemplate,
           data: {
             request_type: "user-text",
             text: userPrompt.value,
@@ -340,6 +351,9 @@ const sendMessage = async () => {
 // Need to fix all of these handlers with the actual logic
 const handleUserFeedback = async (messageId: string) => {
   try {
+    // Set flag to prevent generic websocket errors
+    appStore.setWebsocketRequestInProgress(true);
+
     if (appStore.statusWS !== "OPEN") {
       await appStore.openWS();
     }
@@ -354,8 +368,6 @@ const handleUserFeedback = async (messageId: string) => {
           messageStore.setIsFeedbackLoading(messageId, false);
           return;
         }
-        // Track that this message is waiting for feedback
-        messageStore.setIsFeedbackLoading(messageId, true);
 
         // Get conversation ID with fallback to last submitted conversation
         const conversationId = appStore.getConversationId(messageStore);
@@ -365,9 +377,8 @@ const handleUserFeedback = async (messageId: string) => {
           return;
         }
 
-        // Get selectedTemplate from sessionStorage
-        const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-        if (!selectedTemplate) {
+        // Get selectedTemplate
+        if (!appStore.selectedTemplate) {
           appStore.addAlert(
             "Missing selectedTemplate, please reload or try again"
           );
@@ -375,7 +386,7 @@ const handleUserFeedback = async (messageId: string) => {
           return;
         }
 
-        // Set feedback loading with timeout
+        // Set feedback loading state for WebSocket request tracking
         messageStore.setFeedbackLoadingWithTimeout(messageId);
 
         appStore.sendWS(
@@ -384,13 +395,13 @@ const handleUserFeedback = async (messageId: string) => {
             user_id: userId,
             conversation_id: conversationId,
             message_id: messageId,
-            selectedTemplate,
+            selectedTemplate: appStore.selectedTemplate,
             data: {
               request_type: WebSocketTextRequestType.FEEDBACK,
               text: message.text,
               language: "es",
             },
-          } satisfies FeedbackConversationRequestBody)
+          })
         );
       } else {
         appStore.addAlert(
@@ -399,25 +410,18 @@ const handleUserFeedback = async (messageId: string) => {
         messageStore.setIsFeedbackLoading(messageId, false);
       }
     } else {
-      // Clear feedback loading state when connection fails
-      messageStore.setIsFeedbackLoading(messageId, false);
+      // Set feedback error with 2s delay - don't clear loading immediately
       messageStore.setFeedbackError(
         messageId,
-        "Connection failed. Unable to get feedback at this time."
-      );
-      appStore.addAlert(
         "Connection failed. Unable to get feedback at this time."
       );
     }
   } catch (error) {
     console.error("Error sending feedback request:", error);
 
-    messageStore.setIsFeedbackLoading(messageId, false);
+    // Set feedback error with 2s delay - don't clear loading immediately
     messageStore.setFeedbackError(
       messageId,
-      "Connection failed. Unable to get feedback at this time."
-    );
-    appStore.addAlert(
       "Connection failed. Unable to get feedback at this time."
     );
   }
@@ -425,6 +429,9 @@ const handleUserFeedback = async (messageId: string) => {
 
 const handleUserTranslate = async (messageId: string) => {
   try {
+    // Set flag to prevent generic websocket errors
+    appStore.setWebsocketRequestInProgress(true);
+
     if (appStore.statusWS !== "OPEN") {
       await appStore.openWS();
     }
@@ -448,9 +455,8 @@ const handleUserTranslate = async (messageId: string) => {
           return;
         }
 
-        // Get selectedTemplate from sessionStorage
-        const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-        if (!selectedTemplate) {
+        // Get selectedTemplate
+        if (!appStore.selectedTemplate) {
           appStore.addAlert(
             "Missing selectedTemplate, please reload or try again"
           );
@@ -458,7 +464,7 @@ const handleUserTranslate = async (messageId: string) => {
           return;
         }
 
-        // Set translation loading state
+        // Set translation loading state for WebSocket request tracking
         messageStore.setTranslationLoadingWithTimeout(messageId);
 
         appStore.sendWS(
@@ -467,13 +473,13 @@ const handleUserTranslate = async (messageId: string) => {
             user_id: userId,
             conversation_id: conversationId,
             message_id: messageId,
-            selectedTemplate,
+            selectedTemplate: appStore.selectedTemplate,
             data: {
               request_type: WebSocketTextRequestType.TRANSLATION,
               text: message.text,
               language: "es",
             },
-          } satisfies TranslationConversationRequestBody)
+          })
         );
       } else {
         appStore.addAlert(
@@ -482,15 +488,18 @@ const handleUserTranslate = async (messageId: string) => {
         messageStore.setIsTranslationLoading(messageId, false);
       }
     } else {
-      // Clear translation loading state when connection fails
-      messageStore.setIsTranslationLoading(messageId, false);
-      appStore.addAlert("Connection failed. Unable to translate at this time.");
+      // Set translation error with 2s delay - don't clear loading immediately
+      messageStore.setTranslationError(
+        messageId,
+        "Connection failed. Unable to translate at this time."
+      );
+      // Don't clear timeout immediately - let the error function handle it with delay
     }
   } catch (error) {
     console.error("Error sending translation request:", error);
-    messageStore.setIsTranslationLoading(messageId, false);
+    // Set translation error with 2s delay - don't clear loading immediately
     messageStore.setTranslationError(messageId, ERROR_MESSAGES.TRANSLATION);
-    appStore.addAlert("Failed to translate message. Please try again later.");
+    // Don't clear timeout immediately - let the error function handle it with delay
   }
 };
 
@@ -517,6 +526,9 @@ const sendTTSRequest = async (
   speed: "normal" | "slow"
 ) => {
   try {
+    // Set flag to prevent generic websocket errors
+    appStore.setWebsocketRequestInProgress(true);
+
     // Check if this message already has a TTS request in progress
     const messageStore = useMessageStore();
     if (messageStore.isTTSCompleted(messageId)) {
@@ -547,7 +559,7 @@ const sendTTSRequest = async (
         // This prevents interfering with IndexedDB audio playback
         const chatbotStore = useChatbotStore();
         if (chatbotStore.ttsAudioManager.isPlaying) {
-          chatbotStore.ttsAudioManager.stopAudio();
+          await chatbotStore.ttsAudioManager.stopAudio();
         }
 
         // Clear any queued audio for this message to prevent mixing
@@ -568,36 +580,40 @@ const sendTTSRequest = async (
     }
 
     if (appStore.statusWS === "OPEN") {
-      const conversationId = messageStore.getConversationId();
+      // Get conversation ID with fallback to last submitted conversation
+      const conversationId = appStore.getConversationId(messageStore);
       if (!conversationId) {
         appStore.addAlert(
           "No active conversation. Please start a lesson first."
         );
-        // Clear loading state on error
-        if (chatMessageRef && chatMessageRef.setPlayLoading) {
-          chatMessageRef.setPlayLoading(false, speed);
-        }
-        // Clear message error state so play buttons can be clicked again
-        messageStore.removeMessageError(messageId);
-        // Clear TTS request tracking so hasAnyPlayButtonLoading becomes false
-        appStore.clearTTSRequest(messageId);
+        // Add 1 second delay before clearing loading state
+        setTimeout(() => {
+          if (chatMessageRef && chatMessageRef.setPlayLoading) {
+            chatMessageRef.setPlayLoading(false, speed);
+          }
+          // Clear message error state so play buttons can be clicked again
+          messageStore.removeMessageError(messageId);
+          // Clear TTS request tracking so hasAnyPlayButtonLoading becomes false
+          appStore.clearTTSRequest(messageId);
+        }, 1000);
         return;
       }
 
-      // Get selectedTemplate from sessionStorage
-      const selectedTemplate = sessionStorage.getItem("selectedTemplate");
-      if (!selectedTemplate) {
+      // Get selectedTemplate
+      if (!appStore.selectedTemplate) {
         appStore.addAlert(
           "Missing selectedTemplate, please reload or try again"
         );
-        // Clear loading state on error
-        if (chatMessageRef && chatMessageRef.setPlayLoading) {
-          chatMessageRef.setPlayLoading(false, speed);
-        }
-        // Clear message error state so play buttons can be clicked again
-        messageStore.removeMessageError(messageId);
-        // Clear TTS request tracking so hasAnyPlayButtonLoading becomes false
-        appStore.clearTTSRequest(messageId);
+        // Add 1 second delay before clearing loading state
+        setTimeout(() => {
+          if (chatMessageRef && chatMessageRef.setPlayLoading) {
+            chatMessageRef.setPlayLoading(false, speed);
+          }
+          // Clear message error state so play buttons can be clicked again
+          messageStore.removeMessageError(messageId);
+          // Clear TTS request tracking so hasAnyPlayButtonLoading becomes false
+          appStore.clearTTSRequest(messageId);
+        }, 1000);
         return;
       }
 
@@ -606,7 +622,7 @@ const sendTTSRequest = async (
         event_type: "EVENT_TEXT_START",
         conversation_id: conversationId,
         message_id: messageId,
-        selectedTemplate,
+        selectedTemplate: appStore.selectedTemplate,
         data: {
           request_type: "tts",
           text: text,
@@ -620,10 +636,28 @@ const sendTTSRequest = async (
       // We'll use a different approach - store the message ID in a way that the websocket can access it
       // For now, we'll rely on the improved message ID detection in the websocket processing
     } else {
+      // WebSocket connection failed - add alert
       appStore.addAlert(
         "Connection failed. Unable to request TTS at this time."
       );
-      // Clear loading state on error
+      // Add 1 second delay before clearing loading state
+      setTimeout(() => {
+        if (chatMessageRef && chatMessageRef.setPlayLoading) {
+          chatMessageRef.setPlayLoading(false, speed);
+        }
+        // Clear message error state so play buttons can be clicked again
+        messageStore.removeMessageError(messageId);
+        // Clear TTS request tracking so hasAnyPlayButtonLoading becomes false
+        appStore.clearTTSRequest(messageId);
+      }, 1000);
+    }
+  } catch (error) {
+    console.error("Error sending TTS request:", error);
+    // Add alert for TTS error
+    appStore.addAlert("Failed to request TTS. Please try again later.");
+    // Add 1 second delay before clearing loading state
+    setTimeout(() => {
+      const chatMessageRef = chatMessageRefs.value.get(messageId);
       if (chatMessageRef && chatMessageRef.setPlayLoading) {
         chatMessageRef.setPlayLoading(false, speed);
       }
@@ -631,19 +665,7 @@ const sendTTSRequest = async (
       messageStore.removeMessageError(messageId);
       // Clear TTS request tracking so hasAnyPlayButtonLoading becomes false
       appStore.clearTTSRequest(messageId);
-    }
-  } catch (error) {
-    console.error("Error sending TTS request:", error);
-    appStore.addAlert("Failed to request TTS. Please try again later.");
-    // Clear loading state on error
-    const chatMessageRef = chatMessageRefs.value.get(messageId);
-    if (chatMessageRef && chatMessageRef.setPlayLoading) {
-      chatMessageRef.setPlayLoading(false, speed);
-    }
-    // Clear message error state so play buttons can be clicked again
-    messageStore.removeMessageError(messageId);
-    // Clear TTS request tracking so hasAnyPlayButtonLoading becomes false
-    appStore.clearTTSRequest(messageId);
+    }, 1000);
   }
 };
 
@@ -659,20 +681,13 @@ const handleBotPlay = async (messageId: string, speed: "normal" | "slow") => {
     const message = messageStore.getMessage(messageId);
     const { generateContentKey } = useContentKey();
 
-    // Stop any cached audio that might be playing
-    if (currentPlayingAudio.value) {
-      try {
-        const playingMessageId = currentPlayingAudio.value.messageId;
-        const playingSpeed = currentPlayingAudio.value.speed;
-        currentPlayingAudio.value.audioElement.pause();
-        currentPlayingAudio.value.audioElement.currentTime = 0;
-        URL.revokeObjectURL(currentPlayingAudio.value.audioElement.src);
-        // Clear audio playing state with specific speed
-        messageStore.setAudioPlaying(playingMessageId, false, playingSpeed);
-      } catch (error) {
-        console.error("Error stopping previous cached audio:", error);
-      }
-      currentPlayingAudio.value = null;
+    // Step 1: Stop any conflicting audio systems cleanly
+    await audioPlayback.stopAllAudio();
+
+    // Stop any TTS audio that might be playing
+    const chatbotStore = useChatbotStore();
+    if (chatbotStore.ttsAudioManager.isPlaying) {
+      await chatbotStore.ttsAudioManager.stopAudio();
     }
 
     // Clear audio playing states for this specific message
@@ -723,12 +738,6 @@ const handleBotPlay = async (messageId: string, speed: "normal" | "slow") => {
           }
 
           if (!foundInSessionStorage) {
-            // Stop any TTS audio that might be playing before requesting new TTS
-            const chatbotStore = useChatbotStore();
-            if (chatbotStore.ttsAudioManager.isPlaying) {
-              chatbotStore.ttsAudioManager.stopAudio();
-            }
-
             // No cached audio found, send TTS request
             if (message.text) {
               await sendTTSRequest(messageId, message.text, speed);
@@ -739,58 +748,8 @@ const handleBotPlay = async (messageId: string, speed: "normal" | "slow") => {
       }
 
       if (audioData) {
-        // Stop any TTS audio that might be playing before playing cached audio
-        const chatbotStore = useChatbotStore();
-        if (chatbotStore.ttsAudioManager.isPlaying) {
-          chatbotStore.ttsAudioManager.stopAudio();
-        }
-
-        // Play cached audio
-        const audioBlob = new Blob([Uint8Array.from(audioData.data)], {
-          type: "audio/wav",
-        });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audioElement = new Audio(audioUrl);
-
-        // Set playback rate for slow speed
-        if (speed === "slow") {
-          audioElement.playbackRate = 0.7;
-        }
-
-        // Set up audio element
-        currentPlayingAudio.value = {
-          messageId,
-          speed,
-          audioElement,
-        };
-
-        // Mark audio as playing in message store
-        messageStore.setAudioPlaying(messageId, true, speed);
-
-        // Set up unified chat audio analysis for mouth movement
-        setupChatAudioAnalysis(audioElement);
-
-        // Play the audio
-        await audioElement.play();
-
-        // Clear any loading state since we successfully started playing cached audio
-        const chatMessageRef = chatMessageRefs.value.get(messageId);
-        if (chatMessageRef && chatMessageRef.setPlayLoading) {
-          chatMessageRef.setPlayLoading(false, speed);
-        }
-
-        // Set up event listener for when audio ends
-        audioElement.onended = () => {
-          if (currentPlayingAudio.value?.messageId === messageId) {
-            const currentSpeed = currentPlayingAudio.value.speed;
-            currentPlayingAudio.value = null;
-            // Clear audio playing state with specific speed
-            messageStore.setAudioPlaying(messageId, false, currentSpeed);
-          }
-        };
-
-        // Note: Lip sync is handled by the audio analysis system when audio is playing
-        // No need to use TTS audio manager for chat play since we're using regular audio element
+        // Play cached audio using the new composable
+        await audioPlayback.playCachedAudio(messageId, audioData, speed);
       }
     }
   } catch (error) {
@@ -800,7 +759,7 @@ const handleBotPlay = async (messageId: string, speed: "normal" | "slow") => {
     // Clear loading state on error
     const chatMessageRef = chatMessageRefs.value.get(messageId);
     if (chatMessageRef && chatMessageRef.setPlayLoading) {
-      chatMessageRef.setPlayLoading(false);
+      chatMessageRef.setPlayLoading(false, speed);
     }
   } finally {
     // Always reset the processing flag
@@ -808,86 +767,9 @@ const handleBotPlay = async (messageId: string, speed: "normal" | "slow") => {
   }
 };
 
-// Chat audio analysis functions
-setupChatAudioAnalysis = async (audioElement: HTMLAudioElement) => {
-  try {
-    chatAudioContext = new (window.AudioContext ||
-      (window as typeof window & { webkitAudioContext: typeof AudioContext })
-        .webkitAudioContext)();
-    chatAnalyser = chatAudioContext.createAnalyser();
-    chatAnalyser.fftSize = AUDIO_ANALYSIS_CONFIG.FFT_SIZE;
-    chatAnalyser.smoothingTimeConstant =
-      AUDIO_ANALYSIS_CONFIG.SMOOTHING_TIME_CONSTANT;
-    chatDataArray = new Uint8Array(chatAnalyser.frequencyBinCount);
-
-    const source = chatAudioContext.createMediaElementSource(audioElement);
-    source.connect(chatAnalyser);
-    chatAnalyser.connect(chatAudioContext.destination);
-
-    // Start chat lip sync loop
-    startChatLipSyncLoop();
-
-    // Listen for audio end to stop analysis
-    audioElement.addEventListener("ended", () => {
-      stopChatLipSyncLoop();
-    });
-  } catch (error) {
-    console.error("Failed to setup chat audio analysis:", error);
-  }
-};
-
-startChatLipSyncLoop = () => {
-  chatLipSyncIntervalId = setInterval(() => {
-    if (chatAnalyser && chatDataArray) {
-      // Analyze chat audio using the same method as bot audio
-      chatAnalyser.getByteFrequencyData(chatDataArray);
-      const result = analyzeAudioData(
-        chatDataArray,
-        chatAudioContext!,
-        lastChatAmplitude
-      );
-      lastChatAmplitude = result.amplitude;
-
-      // Update lip sync status for chat play button
-      lipSyncStatus.activeSound = result.activeSound;
-      lipSyncStatus.activeMorphValue = result.amplitude;
-      lipSyncStatus.source = "replay";
-
-      // Let avatar store handle mouth movement - no duplicate calls
-      // updateMouthMovement(result.amplitude, result.activeSound, { threshold: 0.02, sensitivity: 6.0 }, "replay");
-    }
-  }, AUDIO_ANALYSIS_CONFIG.LIP_SYNC_INTERVAL);
-};
-
-stopChatLipSyncLoop = () => {
-  if (chatLipSyncIntervalId) {
-    clearInterval(chatLipSyncIntervalId);
-    chatLipSyncIntervalId = null;
-  }
-};
-
 const handleBotStop = (messageId: string) => {
-  // Stop any currently playing audio
-  if (currentPlayingAudio.value) {
-    try {
-      const playingMessageId = currentPlayingAudio.value.messageId;
-      const playingSpeed = currentPlayingAudio.value.speed;
-      currentPlayingAudio.value.audioElement.pause();
-      currentPlayingAudio.value.audioElement.currentTime = 0;
-      URL.revokeObjectURL(currentPlayingAudio.value.audioElement.src);
-      // Clear audio playing state with specific speed
-      messageStore.setAudioPlaying(playingMessageId, false, playingSpeed);
-    } catch (error) {
-      console.error("Error stopping audio:", error);
-    }
-    currentPlayingAudio.value = null;
-  }
-
-  // Stop any TTS audio that might be playing
-  const chatbotStore = useChatbotStore();
-  if (chatbotStore.ttsAudioManager.isPlaying) {
-    chatbotStore.ttsAudioManager.stopAudio();
-  }
+  // Use the audio playback composable to stop all audio
+  audioPlayback.stopAllAudio();
 };
 
 // Watch for new messages and scroll to bottom
@@ -921,22 +803,19 @@ watch(
   }
 );
 
+// Watch for audio playback speed changes and update the composable
+watch(
+  () => audioPlaybackSpeed.value,
+  (newSpeed) => {
+    audioPlayback.setSlowPlaybackRate(newSpeed);
+  },
+  { immediate: true }
+);
+
 // Listen for global event to stop cached audio when TTS starts
 onMounted(() => {
   const handleStopAllCachedAudio = () => {
-    if (currentPlayingAudio.value) {
-      try {
-        const playingMessageId = currentPlayingAudio.value.messageId;
-        const playingSpeed = currentPlayingAudio.value.speed;
-        currentPlayingAudio.value.audioElement.pause();
-        currentPlayingAudio.value.audioElement.currentTime = 0;
-        URL.revokeObjectURL(currentPlayingAudio.value.audioElement.src);
-        messageStore.setAudioPlaying(playingMessageId, false, playingSpeed);
-      } catch (error) {
-        console.error("Error stopping cached audio:", error);
-      }
-      currentPlayingAudio.value = null;
-    }
+    audioPlayback.stopAllAudio();
   };
 
   window.addEventListener("stopAllCachedAudio", handleStopAllCachedAudio);

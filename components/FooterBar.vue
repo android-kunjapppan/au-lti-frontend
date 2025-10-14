@@ -51,36 +51,62 @@
             </div>
           </div>
         </div>
-        <button
+
+        <!-- Submit Section -->
+        <div
+          class="position-relative d-flex flex-column align-items-end gap-space-xxs"
           v-if="
             isLessonContent &&
-            responsePairCount === minRequiredPair &&
-            !isSubmitted &&
-            !isBotResponding &&
-            !isMaxAttemptsReached
-          "
-          class="py-space-xxs px-space-sm fs-medium view-result-btn"
-          @click="handleSubmit"
-          :disabled="isSubmitting">
-          <i-fa6-solid:spinner
-            v-if="isSubmitting"
-            class="icon-style spin-fast"
-            aria-hidden="true" />
-          <span class="button-text">{{
-            isSubmitting ? "Submitting..." : "Submit"
-          }}</span>
-        </button>
+            !isMaxAttemptsReached &&
+            minRequiredPair &&
+            responsePairCount >= minRequiredPair
+          ">
+          <!-- Notification (only for practice) -->
+          <div v-if="!isTest" class="notification-wrapper mb-space-xxs">
+            <NotificationTooltip
+              v-if="showSubmitNotification"
+              @close="showSubmitNotification = false"
+              message="You've done enough for today, you can submit now, or keep chatting if you'd like!" />
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            class="py-space-xxs px-space-sm fs-medium view-result-btn"
+            @click="handleSubmit"
+            :disabled="isSubmitting || (!isTest && isBotResponding)"
+            v-if="isTest ? !isBotResponding : true">
+            <i-fa6-solid:spinner
+              v-if="isSubmitting"
+              class="icon-style spin-fast"
+              aria-hidden="true" />
+            <span class="button-text">
+              {{ isSubmitting ? "Submitting..." : "Submit" }}
+            </span>
+          </button>
+        </div>
       </div>
     </div>
-    <div
-      v-if="isLessonContent || isLessonResult"
-      class="progress-bar"
-      @mouseenter="isHoveringProgress = true"
-      @mouseleave="isHoveringProgress = false">
+    <div v-if="isLessonContent" class="progress-bar">
       <div class="progress" :style="{ width: `${progress}%` }">
-        <span v-if="isHoveringProgress" class="progress-text fs-small">{{
-          `${responsePairCount}/${minRequiredPair} responses`
-        }}</span>
+        <div
+          class="progress-tooltip d-flex flex-column align-items-center position-absolute"
+          :class="{
+            'is-complete': progress === 100,
+            'is-start': progress === 0,
+          }">
+          <span
+            class="progress-text px-space-xxs d-flex align-items-center fs-small"
+            >{{ `${responsePairCount}/${minRequiredPair} responses` }}</span
+          >
+          <div
+            class="progress-arrow"
+            :class="{
+              'is-complete': progress === 100,
+              'is-start': progress === 0,
+            }">
+            <div class="arrow-shape"></div>
+          </div>
+        </div>
       </div>
     </div>
   </footer>
@@ -91,6 +117,7 @@ import { onClickOutside } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import { DEFAULT_REQUEST_TIMEOUT_LENGTH } from "~/utils/constants";
 
 interface Props {
   heading?: string;
@@ -117,12 +144,36 @@ const { isMaxAttemptsReached } = storeToRefs(appStore);
 const { isSubmitting } = storeToRefs(messageStore);
 
 const isConfirmCardVisible = ref(false);
-const isHoveringProgress = ref(false);
+const showSubmitNotification = ref(false);
 let submitTimeout: NodeJS.Timeout | null = null;
 
 const isLessonContent = computed(() => route.name === "lesson-content");
 const isLessonResult = computed(() => route.name === "lesson-result");
 const isTimeoutRoute = computed(() => route.name === "timeout");
+
+// Computed property for submit notification condition
+const shouldShowSubmitNotification = computed(() => {
+  return (
+    responsePairCount.value >= (minRequiredPair.value ?? 0) &&
+    isLessonContent.value &&
+    !isSubmitted.value &&
+    !isMaxAttemptsReached.value
+  );
+});
+
+// Watch for when submit button becomes available to show notification
+watch(
+  shouldShowSubmitNotification,
+  (shouldShow) => {
+    if (shouldShow) {
+      // Show notification after a short delay
+      setTimeout(() => {
+        showSubmitNotification.value = true;
+      }, 500);
+    }
+  },
+  { immediate: true }
+);
 
 const settingsModal = useTemplateRef<HTMLElement>("settings-modal");
 const handleClickOutside = (event: PointerEvent) => {
@@ -153,14 +204,11 @@ const handleSubmit = async () => {
   submitSuccess.value = false; // Reset submit success state
 
   // Set 2-minute timeout for submit operation
-  submitTimeout = setTimeout(
-    () => {
-      isSubmitting.value = false;
-      submitSuccess.value = false;
-      appStore.addAlert("Submit request timed out. Please try again.");
-    },
-    2 * 60 * 1000
-  ); // 2 minutes
+  submitTimeout = setTimeout(() => {
+    isSubmitting.value = false;
+    submitSuccess.value = false;
+    appStore.addAlert("Submit request timed out. Please try again.");
+  }, DEFAULT_REQUEST_TIMEOUT_LENGTH); // 2 minutes
 
   try {
     await endConversation();
@@ -287,6 +335,13 @@ const handleSubmit = async () => {
   border: none;
 }
 
+.notification-wrapper {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  z-index: var(--rds-z-index-tooltip);
+}
+
 .view-result-btn {
   display: flex;
   border-radius: 103px;
@@ -388,42 +443,67 @@ const handleSubmit = async () => {
   margin: 0;
   position: relative;
   cursor: pointer;
-  border-radius: 4px;
   overflow: visible;
 }
 
 .progress {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(29, 228, 132, 1),
-    rgba(24, 180, 105, 1)
-  );
+  background: var(--rds-footer-progress-bar-bg);
   transition: width 0.3s ease-in-out;
   position: relative;
-  border-radius: 4px;
   min-width: 0.5rem;
 }
 
-.progress-text {
-  position: absolute;
-  right: 8px;
-  top: -25px;
-  transform: translateY(-50%);
-  color: white;
-  font-weight: 700;
+.progress-tooltip {
+  left: 100%;
+  top: -45px;
+  transform: translateX(-50%);
   opacity: 0;
   transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.progress-tooltip.is-complete {
+  left: auto;
+  right: 0;
+  transform: translateX(-1%);
+}
+
+.progress-tooltip.is-start {
+  left: 0;
+  transform: translateX(2%);
+}
+
+.progress-arrow.is-complete {
+  position: absolute;
+  right: 5%;
+  transform: translateX(-50%);
+  top: 100%;
+}
+
+.progress-arrow.is-start {
+  position: absolute;
+  left: 15%;
+  transform: translateX(-50%);
+  top: 100%;
+}
+
+.progress-text {
+  color: white;
+  font-weight: 700;
   background-color: var(--rds-dark-2);
-  padding: 8px;
   border-radius: 8px;
+  white-space: nowrap;
+  height: 31px;
 }
 
-.progress:hover .progress-text {
+.arrow-shape {
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid var(--rds-dark-2);
+}
+
+.progress:hover .progress-tooltip {
   opacity: 1;
-}
-
-.progress:hover {
-  filter: brightness(1.1);
 }
 </style>

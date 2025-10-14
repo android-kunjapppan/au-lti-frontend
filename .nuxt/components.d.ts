@@ -1,586 +1,564 @@
-import type { DefineComponent, SlotsType } from "vue";
-type IslandComponent<T extends DefineComponent> = T &
-  DefineComponent<
-    {},
-    { refresh: () => Promise<void> },
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    SlotsType<{ fallback: { error: unknown } }>
-  >;
+
+import type { DefineComponent, SlotsType } from 'vue'
+type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>
 interface _GlobalComponents {
-  AlertMessage: (typeof import("../components/AlertMessage.vue"))["default"];
-  ButtonComponent: (typeof import("../components/ButtonComponent.vue"))["default"];
-  ChatMessage: (typeof import("../components/ChatMessage.vue"))["default"];
-  ConfirmCard: (typeof import("../components/ConfirmCard.vue"))["default"];
-  ContentContainer: (typeof import("../components/ContentContainer.vue"))["default"];
-  DateInput: (typeof import("../components/DateInput.vue"))["default"];
-  FooterBar: (typeof import("../components/FooterBar.vue"))["default"];
-  LoadingSpinner: (typeof import("../components/LoadingSpinner.vue"))["default"];
-  LottieLooper: (typeof import("../components/LottieLooper.vue"))["default"];
-  MicrophoneInput: (typeof import("../components/MicrophoneInput.vue"))["default"];
-  SideBar: (typeof import("../components/SideBar.vue"))["default"];
-  SignInCard: (typeof import("../components/SignInCard.vue"))["default"];
-  SuggestionBar: (typeof import("../components/SuggestionBar.vue"))["default"];
-  SuggestionBox: (typeof import("../components/SuggestionBox.vue"))["default"];
-  ToolTip: (typeof import("../components/ToolTip.vue"))["default"];
-  WaveformComponent: (typeof import("../components/WaveformComponent.vue"))["default"];
-  AvatarModel: (typeof import("../components/avatar/AvatarModel.vue"))["default"];
-  AvatarUpdater: (typeof import("../components/avatar/AvatarUpdater.vue"))["default"];
-  DashboardAssignmentCard: (typeof import("../components/dashboard/AssignmentCard.vue"))["default"];
-  DashboardAssignmentDetailsModal: (typeof import("../components/dashboard/AssignmentDetailsModal.vue"))["default"];
-  DashboardDropdownComponent: (typeof import("../components/dashboard/DropdownComponent.vue"))["default"];
-  DashboardFilterButton: (typeof import("../components/dashboard/FilterButton.vue"))["default"];
-  DashboardMultiSelectFilter: (typeof import("../components/dashboard/MultiSelectFilter.vue"))["default"];
-  DashboardPaginationComponent: (typeof import("../components/dashboard/PaginationComponent.vue"))["default"];
-  DashboardSearchComponent: (typeof import("../components/dashboard/SearchComponent.vue"))["default"];
-  DashboardSortableTableHeader: (typeof import("../components/dashboard/SortableTableHeader.vue"))["default"];
-  DashboardStudentAssignmentsSection: (typeof import("../components/dashboard/StudentAssignmentsSection.vue"))["default"];
-  DashboardStudentOverview: (typeof import("../components/dashboard/StudentOverview.vue"))["default"];
-  DashboardStudentRow: (typeof import("../components/dashboard/StudentRow.vue"))["default"];
-  DashboardStudentStatsCard: (typeof import("../components/dashboard/StudentStatsCard.vue"))["default"];
-  DashboardStudentsTable: (typeof import("../components/dashboard/StudentsTable.vue"))["default"];
-  RdsDropdown: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdown.vue"))["default"];
-  RdsDropdownDivider: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownDivider.vue"))["default"];
-  RdsDropdownHeader: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownHeader.vue"))["default"];
-  RdsDropdownItem: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownItem.vue"))["default"];
-  RdsModal: (typeof import("../node_modules/@rds-vue-ui/rds-modal/RdsModal.vue"))["default"];
-  RdsPagination: (typeof import("../node_modules/@rds-vue-ui/rds-pagination/RdsPagination.vue"))["default"];
-  TypeaheadSelect: (typeof import("../node_modules/@rds-vue-ui/typeahead-select/TypeaheadSelect.vue"))["default"];
-  NuxtWelcome: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/welcome.vue"))["default"];
-  NuxtLayout: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-layout"))["default"];
-  NuxtErrorBoundary: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-error-boundary"))["default"];
-  ClientOnly: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/client-only"))["default"];
-  DevOnly: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/dev-only"))["default"];
-  ServerPlaceholder: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder"))["default"];
-  NuxtLink: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-link"))["default"];
-  NuxtLoadingIndicator: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-loading-indicator"))["default"];
-  NuxtRouteAnnouncer: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-route-announcer"))["default"];
-  NuxtImg: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs"))["NuxtImg"];
-  NuxtPicture: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs"))["NuxtPicture"];
-  AnimatedSprite: (typeof import("@tresjs/cientos"))["AnimatedSprite"];
-  Backdrop: (typeof import("@tresjs/cientos"))["Backdrop"];
-  BakeShadows: (typeof import("@tresjs/cientos"))["BakeShadows"];
-  BaseCameraControls: (typeof import("@tresjs/cientos"))["BaseCameraControls"];
-  Box: (typeof import("@tresjs/cientos"))["Box"];
-  CameraControls: (typeof import("@tresjs/cientos"))["CameraControls"];
-  CatmullRomCurve3: (typeof import("@tresjs/cientos"))["CatmullRomCurve3"];
-  Circle: (typeof import("@tresjs/cientos"))["Circle"];
-  Cone: (typeof import("@tresjs/cientos"))["Cone"];
-  ContactShadows: (typeof import("@tresjs/cientos"))["ContactShadows"];
-  CustomShaderMaterial: (typeof import("@tresjs/cientos"))["CustomShaderMaterial"];
-  Cylinder: (typeof import("@tresjs/cientos"))["Cylinder"];
-  Dodecahedron: (typeof import("@tresjs/cientos"))["Dodecahedron"];
-  Environment: (typeof import("@tresjs/cientos"))["Environment"];
-  FBXModel: (typeof import("@tresjs/cientos"))["FBXModel"];
-  Fbo: (typeof import("@tresjs/cientos"))["Fbo"];
-  Fit: (typeof import("@tresjs/cientos"))["Fit"];
-  GLTFModel: (typeof import("@tresjs/cientos"))["GLTFModel"];
-  GlobalAudio: (typeof import("@tresjs/cientos"))["GlobalAudio"];
-  HolographicMaterial: (typeof import("@tresjs/cientos"))["HolographicMaterial"];
-  Html: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Html"];
-  Icosahedron: (typeof import("@tresjs/cientos"))["Icosahedron"];
-  KeyboardControls: (typeof import("@tresjs/cientos"))["KeyboardControls"];
-  Lensflare: (typeof import("@tresjs/cientos"))["Lensflare"];
-  Levioso: (typeof import("@tresjs/cientos"))["Levioso"];
-  Lightformer: (typeof import("@tresjs/cientos"))["Lightformer"];
-  Line2: (typeof import("@tresjs/cientos"))["Line2"];
-  MapControls: (typeof import("@tresjs/cientos"))["MapControls"];
-  MeshGlassMaterial: (typeof import("@tresjs/cientos"))["MeshGlassMaterial"];
-  MeshReflectionMaterial: (typeof import("@tresjs/cientos"))["MeshReflectionMaterial"];
-  MeshWobbleMaterial: (typeof import("@tresjs/cientos"))["MeshWobbleMaterial"];
-  MouseParallax: (typeof import("@tresjs/cientos"))["MouseParallax"];
-  Ocean: (typeof import("@tresjs/cientos"))["Ocean"];
-  Octahedron: (typeof import("@tresjs/cientos"))["Octahedron"];
-  OrbitControls: (typeof import("@tresjs/cientos"))["OrbitControls"];
-  Plane: (typeof import("@tresjs/cientos"))["Plane"];
-  PointerLockControls: (typeof import("@tresjs/cientos"))["PointerLockControls"];
-  PositionalAudio: (typeof import("@tresjs/cientos"))["PositionalAudio"];
-  Precipitation: (typeof import("@tresjs/cientos"))["Precipitation"];
-  Reflector: (typeof import("@tresjs/cientos"))["Reflector"];
-  Ring: (typeof import("@tresjs/cientos"))["Ring"];
-  RoundedBox: (typeof import("@tresjs/cientos"))["RoundedBox"];
-  SVG: (typeof import("@tresjs/cientos"))["SVG"];
-  Sampler: (typeof import("@tresjs/cientos"))["Sampler"];
-  ScrollControls: (typeof import("@tresjs/cientos"))["ScrollControls"];
-  Sky: (typeof import("@tresjs/cientos"))["Sky"];
-  Smoke: (typeof import("@tresjs/cientos"))["Smoke"];
-  Sparkles: (typeof import("@tresjs/cientos"))["Sparkles"];
-  Sphere: (typeof import("@tresjs/cientos"))["Sphere"];
-  Stars: (typeof import("@tresjs/cientos"))["Stars"];
-  Stats: (typeof import("@tresjs/cientos"))["Stats"];
-  StatsGl: (typeof import("@tresjs/cientos"))["StatsGl"];
-  Superformula: (typeof import("@tresjs/cientos"))["Superformula"];
-  Tetrahedron: (typeof import("@tresjs/cientos"))["Tetrahedron"];
-  Text3D: (typeof import("@tresjs/cientos"))["Text3D"];
-  Torus: (typeof import("@tresjs/cientos"))["Torus"];
-  TorusKnot: (typeof import("@tresjs/cientos"))["TorusKnot"];
-  TransformControls: (typeof import("@tresjs/cientos"))["TransformControls"];
-  Tube: (typeof import("@tresjs/cientos"))["Tube"];
-  BloomPmndrs: (typeof import("@tresjs/post-processing"))["BloomPmndrs"];
-  DepthOfFieldPmndrs: (typeof import("@tresjs/post-processing"))["DepthOfFieldPmndrs"];
-  EffectComposer: (typeof import("@tresjs/post-processing"))["EffectComposer"];
-  EffectComposerPmndrs: (typeof import("@tresjs/post-processing"))["EffectComposerPmndrs"];
-  Glitch: (typeof import("@tresjs/post-processing"))["Glitch"];
-  GlitchPmndrs: (typeof import("@tresjs/post-processing"))["GlitchPmndrs"];
-  Halftone: (typeof import("@tresjs/post-processing"))["Halftone"];
-  NoisePmndrs: (typeof import("@tresjs/post-processing"))["NoisePmndrs"];
-  OutlinePmndrs: (typeof import("@tresjs/post-processing"))["OutlinePmndrs"];
-  Output: (typeof import("@tresjs/post-processing"))["Output"];
-  Pixelation: (typeof import("@tresjs/post-processing"))["Pixelation"];
-  PixelationPmndrs: (typeof import("@tresjs/post-processing"))["PixelationPmndrs"];
-  SMAA: (typeof import("@tresjs/post-processing"))["SMAA"];
-  UnrealBloom: (typeof import("@tresjs/post-processing"))["UnrealBloom"];
-  VignettePmndrs: (typeof import("@tresjs/post-processing"))["VignettePmndrs"];
-  TresCanvas: (typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.client.vue"))["default"];
-  TresCanvas: IslandComponent<
-    (typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.server.vue"))["default"]
-  >;
-  NuxtPage: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/pages/runtime/page"))["default"];
-  NoScript: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["NoScript"];
-  Link: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Link"];
-  Base: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Base"];
-  Title: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Title"];
-  Meta: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Meta"];
-  Style: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Style"];
-  Head: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Head"];
-  Body: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Body"];
-  NuxtIsland: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-island"))["default"];
-  NuxtRouteAnnouncer: IslandComponent<
-    (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder"))["default"]
-  >;
-  LazyAlertMessage: (typeof import("../components/AlertMessage.vue"))["default"];
-  LazyButtonComponent: (typeof import("../components/ButtonComponent.vue"))["default"];
-  LazyChatMessage: (typeof import("../components/ChatMessage.vue"))["default"];
-  LazyConfirmCard: (typeof import("../components/ConfirmCard.vue"))["default"];
-  LazyContentContainer: (typeof import("../components/ContentContainer.vue"))["default"];
-  LazyDateInput: (typeof import("../components/DateInput.vue"))["default"];
-  LazyFooterBar: (typeof import("../components/FooterBar.vue"))["default"];
-  LazyLoadingSpinner: (typeof import("../components/LoadingSpinner.vue"))["default"];
-  LazyLottieLooper: (typeof import("../components/LottieLooper.vue"))["default"];
-  LazyMicrophoneInput: (typeof import("../components/MicrophoneInput.vue"))["default"];
-  LazySideBar: (typeof import("../components/SideBar.vue"))["default"];
-  LazySignInCard: (typeof import("../components/SignInCard.vue"))["default"];
-  LazySuggestionBar: (typeof import("../components/SuggestionBar.vue"))["default"];
-  LazySuggestionBox: (typeof import("../components/SuggestionBox.vue"))["default"];
-  LazyToolTip: (typeof import("../components/ToolTip.vue"))["default"];
-  LazyWaveformComponent: (typeof import("../components/WaveformComponent.vue"))["default"];
-  LazyAvatarModel: (typeof import("../components/avatar/AvatarModel.vue"))["default"];
-  LazyAvatarUpdater: (typeof import("../components/avatar/AvatarUpdater.vue"))["default"];
-  LazyDashboardAssignmentCard: (typeof import("../components/dashboard/AssignmentCard.vue"))["default"];
-  LazyDashboardAssignmentDetailsModal: (typeof import("../components/dashboard/AssignmentDetailsModal.vue"))["default"];
-  LazyDashboardDropdownComponent: (typeof import("../components/dashboard/DropdownComponent.vue"))["default"];
-  LazyDashboardFilterButton: (typeof import("../components/dashboard/FilterButton.vue"))["default"];
-  LazyDashboardMultiSelectFilter: (typeof import("../components/dashboard/MultiSelectFilter.vue"))["default"];
-  LazyDashboardPaginationComponent: (typeof import("../components/dashboard/PaginationComponent.vue"))["default"];
-  LazyDashboardSearchComponent: (typeof import("../components/dashboard/SearchComponent.vue"))["default"];
-  LazyDashboardSortableTableHeader: (typeof import("../components/dashboard/SortableTableHeader.vue"))["default"];
-  LazyDashboardStudentAssignmentsSection: (typeof import("../components/dashboard/StudentAssignmentsSection.vue"))["default"];
-  LazyDashboardStudentOverview: (typeof import("../components/dashboard/StudentOverview.vue"))["default"];
-  LazyDashboardStudentRow: (typeof import("../components/dashboard/StudentRow.vue"))["default"];
-  LazyDashboardStudentStatsCard: (typeof import("../components/dashboard/StudentStatsCard.vue"))["default"];
-  LazyDashboardStudentsTable: (typeof import("../components/dashboard/StudentsTable.vue"))["default"];
-  LazyRdsDropdown: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdown.vue"))["default"];
-  LazyRdsDropdownDivider: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownDivider.vue"))["default"];
-  LazyRdsDropdownHeader: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownHeader.vue"))["default"];
-  LazyRdsDropdownItem: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownItem.vue"))["default"];
-  LazyRdsModal: (typeof import("../node_modules/@rds-vue-ui/rds-modal/RdsModal.vue"))["default"];
-  LazyRdsPagination: (typeof import("../node_modules/@rds-vue-ui/rds-pagination/RdsPagination.vue"))["default"];
-  LazyTypeaheadSelect: (typeof import("../node_modules/@rds-vue-ui/typeahead-select/TypeaheadSelect.vue"))["default"];
-  LazyNuxtWelcome: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/welcome.vue"))["default"];
-  LazyNuxtLayout: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-layout"))["default"];
-  LazyNuxtErrorBoundary: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-error-boundary"))["default"];
-  LazyClientOnly: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/client-only"))["default"];
-  LazyDevOnly: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/dev-only"))["default"];
-  LazyServerPlaceholder: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder"))["default"];
-  LazyNuxtLink: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-link"))["default"];
-  LazyNuxtLoadingIndicator: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-loading-indicator"))["default"];
-  LazyNuxtRouteAnnouncer: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-route-announcer"))["default"];
-  LazyNuxtImg: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs"))["NuxtImg"];
-  LazyNuxtPicture: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs"))["NuxtPicture"];
-  LazyAnimatedSprite: (typeof import("@tresjs/cientos"))["AnimatedSprite"];
-  LazyBackdrop: (typeof import("@tresjs/cientos"))["Backdrop"];
-  LazyBakeShadows: (typeof import("@tresjs/cientos"))["BakeShadows"];
-  LazyBaseCameraControls: (typeof import("@tresjs/cientos"))["BaseCameraControls"];
-  LazyBox: (typeof import("@tresjs/cientos"))["Box"];
-  LazyCameraControls: (typeof import("@tresjs/cientos"))["CameraControls"];
-  LazyCatmullRomCurve3: (typeof import("@tresjs/cientos"))["CatmullRomCurve3"];
-  LazyCircle: (typeof import("@tresjs/cientos"))["Circle"];
-  LazyCone: (typeof import("@tresjs/cientos"))["Cone"];
-  LazyContactShadows: (typeof import("@tresjs/cientos"))["ContactShadows"];
-  LazyCustomShaderMaterial: (typeof import("@tresjs/cientos"))["CustomShaderMaterial"];
-  LazyCylinder: (typeof import("@tresjs/cientos"))["Cylinder"];
-  LazyDodecahedron: (typeof import("@tresjs/cientos"))["Dodecahedron"];
-  LazyEnvironment: (typeof import("@tresjs/cientos"))["Environment"];
-  LazyFBXModel: (typeof import("@tresjs/cientos"))["FBXModel"];
-  LazyFbo: (typeof import("@tresjs/cientos"))["Fbo"];
-  LazyFit: (typeof import("@tresjs/cientos"))["Fit"];
-  LazyGLTFModel: (typeof import("@tresjs/cientos"))["GLTFModel"];
-  LazyGlobalAudio: (typeof import("@tresjs/cientos"))["GlobalAudio"];
-  LazyHolographicMaterial: (typeof import("@tresjs/cientos"))["HolographicMaterial"];
-  LazyHtml: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Html"];
-  LazyIcosahedron: (typeof import("@tresjs/cientos"))["Icosahedron"];
-  LazyKeyboardControls: (typeof import("@tresjs/cientos"))["KeyboardControls"];
-  LazyLensflare: (typeof import("@tresjs/cientos"))["Lensflare"];
-  LazyLevioso: (typeof import("@tresjs/cientos"))["Levioso"];
-  LazyLightformer: (typeof import("@tresjs/cientos"))["Lightformer"];
-  LazyLine2: (typeof import("@tresjs/cientos"))["Line2"];
-  LazyMapControls: (typeof import("@tresjs/cientos"))["MapControls"];
-  LazyMeshGlassMaterial: (typeof import("@tresjs/cientos"))["MeshGlassMaterial"];
-  LazyMeshReflectionMaterial: (typeof import("@tresjs/cientos"))["MeshReflectionMaterial"];
-  LazyMeshWobbleMaterial: (typeof import("@tresjs/cientos"))["MeshWobbleMaterial"];
-  LazyMouseParallax: (typeof import("@tresjs/cientos"))["MouseParallax"];
-  LazyOcean: (typeof import("@tresjs/cientos"))["Ocean"];
-  LazyOctahedron: (typeof import("@tresjs/cientos"))["Octahedron"];
-  LazyOrbitControls: (typeof import("@tresjs/cientos"))["OrbitControls"];
-  LazyPlane: (typeof import("@tresjs/cientos"))["Plane"];
-  LazyPointerLockControls: (typeof import("@tresjs/cientos"))["PointerLockControls"];
-  LazyPositionalAudio: (typeof import("@tresjs/cientos"))["PositionalAudio"];
-  LazyPrecipitation: (typeof import("@tresjs/cientos"))["Precipitation"];
-  LazyReflector: (typeof import("@tresjs/cientos"))["Reflector"];
-  LazyRing: (typeof import("@tresjs/cientos"))["Ring"];
-  LazyRoundedBox: (typeof import("@tresjs/cientos"))["RoundedBox"];
-  LazySVG: (typeof import("@tresjs/cientos"))["SVG"];
-  LazySampler: (typeof import("@tresjs/cientos"))["Sampler"];
-  LazyScrollControls: (typeof import("@tresjs/cientos"))["ScrollControls"];
-  LazySky: (typeof import("@tresjs/cientos"))["Sky"];
-  LazySmoke: (typeof import("@tresjs/cientos"))["Smoke"];
-  LazySparkles: (typeof import("@tresjs/cientos"))["Sparkles"];
-  LazySphere: (typeof import("@tresjs/cientos"))["Sphere"];
-  LazyStars: (typeof import("@tresjs/cientos"))["Stars"];
-  LazyStats: (typeof import("@tresjs/cientos"))["Stats"];
-  LazyStatsGl: (typeof import("@tresjs/cientos"))["StatsGl"];
-  LazySuperformula: (typeof import("@tresjs/cientos"))["Superformula"];
-  LazyTetrahedron: (typeof import("@tresjs/cientos"))["Tetrahedron"];
-  LazyText3D: (typeof import("@tresjs/cientos"))["Text3D"];
-  LazyTorus: (typeof import("@tresjs/cientos"))["Torus"];
-  LazyTorusKnot: (typeof import("@tresjs/cientos"))["TorusKnot"];
-  LazyTransformControls: (typeof import("@tresjs/cientos"))["TransformControls"];
-  LazyTube: (typeof import("@tresjs/cientos"))["Tube"];
-  LazyBloomPmndrs: (typeof import("@tresjs/post-processing"))["BloomPmndrs"];
-  LazyDepthOfFieldPmndrs: (typeof import("@tresjs/post-processing"))["DepthOfFieldPmndrs"];
-  LazyEffectComposer: (typeof import("@tresjs/post-processing"))["EffectComposer"];
-  LazyEffectComposerPmndrs: (typeof import("@tresjs/post-processing"))["EffectComposerPmndrs"];
-  LazyGlitch: (typeof import("@tresjs/post-processing"))["Glitch"];
-  LazyGlitchPmndrs: (typeof import("@tresjs/post-processing"))["GlitchPmndrs"];
-  LazyHalftone: (typeof import("@tresjs/post-processing"))["Halftone"];
-  LazyNoisePmndrs: (typeof import("@tresjs/post-processing"))["NoisePmndrs"];
-  LazyOutlinePmndrs: (typeof import("@tresjs/post-processing"))["OutlinePmndrs"];
-  LazyOutput: (typeof import("@tresjs/post-processing"))["Output"];
-  LazyPixelation: (typeof import("@tresjs/post-processing"))["Pixelation"];
-  LazyPixelationPmndrs: (typeof import("@tresjs/post-processing"))["PixelationPmndrs"];
-  LazySMAA: (typeof import("@tresjs/post-processing"))["SMAA"];
-  LazyUnrealBloom: (typeof import("@tresjs/post-processing"))["UnrealBloom"];
-  LazyVignettePmndrs: (typeof import("@tresjs/post-processing"))["VignettePmndrs"];
-  LazyTresCanvas: (typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.client.vue"))["default"];
-  LazyTresCanvas: IslandComponent<
-    (typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.server.vue"))["default"]
-  >;
-  LazyNuxtPage: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/pages/runtime/page"))["default"];
-  LazyNoScript: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["NoScript"];
-  LazyLink: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Link"];
-  LazyBase: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Base"];
-  LazyTitle: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Title"];
-  LazyMeta: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Meta"];
-  LazyStyle: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Style"];
-  LazyHead: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Head"];
-  LazyBody: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Body"];
-  LazyNuxtIsland: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-island"))["default"];
-  LazyNuxtRouteAnnouncer: IslandComponent<
-    (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder"))["default"]
-  >;
+      'AlertMessage': typeof import("../components/AlertMessage.vue")['default']
+    'ButtonComponent': typeof import("../components/ButtonComponent.vue")['default']
+    'ChatMessage': typeof import("../components/ChatMessage.vue")['default']
+    'ConfirmCard': typeof import("../components/ConfirmCard.vue")['default']
+    'ContentContainer': typeof import("../components/ContentContainer.vue")['default']
+    'DateInput': typeof import("../components/DateInput.vue")['default']
+    'EmptyTranscriptScreen': typeof import("../components/EmptyTranscriptScreen.vue")['default']
+    'FooterBar': typeof import("../components/FooterBar.vue")['default']
+    'LoadingSpinner': typeof import("../components/LoadingSpinner.vue")['default']
+    'LottieLooper': typeof import("../components/LottieLooper.vue")['default']
+    'MicrophoneInput': typeof import("../components/MicrophoneInput.vue")['default']
+    'NotificationTooltip': typeof import("../components/NotificationTooltip.vue")['default']
+    'SideBar': typeof import("../components/SideBar.vue")['default']
+    'SignInCard': typeof import("../components/SignInCard.vue")['default']
+    'SuggestionBar': typeof import("../components/SuggestionBar.vue")['default']
+    'SuggestionBox': typeof import("../components/SuggestionBox.vue")['default']
+    'ToolTip': typeof import("../components/ToolTip.vue")['default']
+    'WaveformComponent': typeof import("../components/WaveformComponent.vue")['default']
+    'AvatarModel': typeof import("../components/avatar/AvatarModel.vue")['default']
+    'AvatarUpdater': typeof import("../components/avatar/AvatarUpdater.vue")['default']
+    'DashboardAssignmentCard': typeof import("../components/dashboard/AssignmentCard.vue")['default']
+    'DashboardAssignmentDetailsModal': typeof import("../components/dashboard/AssignmentDetailsModal.vue")['default']
+    'DashboardDropdownComponent': typeof import("../components/dashboard/DropdownComponent.vue")['default']
+    'DashboardFilterButton': typeof import("../components/dashboard/FilterButton.vue")['default']
+    'DashboardMultiSelectFilter': typeof import("../components/dashboard/MultiSelectFilter.vue")['default']
+    'DashboardPaginationComponent': typeof import("../components/dashboard/PaginationComponent.vue")['default']
+    'DashboardSearchComponent': typeof import("../components/dashboard/SearchComponent.vue")['default']
+    'DashboardSortableTableHeader': typeof import("../components/dashboard/SortableTableHeader.vue")['default']
+    'DashboardStudentAssignmentsSection': typeof import("../components/dashboard/StudentAssignmentsSection.vue")['default']
+    'DashboardStudentOverview': typeof import("../components/dashboard/StudentOverview.vue")['default']
+    'DashboardStudentRow': typeof import("../components/dashboard/StudentRow.vue")['default']
+    'DashboardStudentStatsCard': typeof import("../components/dashboard/StudentStatsCard.vue")['default']
+    'DashboardStudentsTable': typeof import("../components/dashboard/StudentsTable.vue")['default']
+    'RdsDropdown': typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdown.vue")['default']
+    'RdsDropdownDivider': typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownDivider.vue")['default']
+    'RdsDropdownHeader': typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownHeader.vue")['default']
+    'RdsDropdownItem': typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownItem.vue")['default']
+    'RdsModal': typeof import("../node_modules/@rds-vue-ui/rds-modal/RdsModal.vue")['default']
+    'RdsPagination': typeof import("../node_modules/@rds-vue-ui/rds-pagination/RdsPagination.vue")['default']
+    'TypeaheadSelect': typeof import("../node_modules/@rds-vue-ui/typeahead-select/TypeaheadSelect.vue")['default']
+    'NuxtWelcome': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/welcome.vue")['default']
+    'NuxtLayout': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-layout")['default']
+    'NuxtErrorBoundary': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-error-boundary")['default']
+    'ClientOnly': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/client-only")['default']
+    'DevOnly': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/dev-only")['default']
+    'ServerPlaceholder': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder")['default']
+    'NuxtLink': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-link")['default']
+    'NuxtLoadingIndicator': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-loading-indicator")['default']
+    'NuxtRouteAnnouncer': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-route-announcer")['default']
+    'NuxtImg': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtImg']
+    'NuxtPicture': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtPicture']
+    'AnimatedSprite': typeof import("@tresjs/cientos")['AnimatedSprite']
+    'Backdrop': typeof import("@tresjs/cientos")['Backdrop']
+    'BakeShadows': typeof import("@tresjs/cientos")['BakeShadows']
+    'BaseCameraControls': typeof import("@tresjs/cientos")['BaseCameraControls']
+    'Box': typeof import("@tresjs/cientos")['Box']
+    'CameraControls': typeof import("@tresjs/cientos")['CameraControls']
+    'CatmullRomCurve3': typeof import("@tresjs/cientos")['CatmullRomCurve3']
+    'Circle': typeof import("@tresjs/cientos")['Circle']
+    'Cone': typeof import("@tresjs/cientos")['Cone']
+    'ContactShadows': typeof import("@tresjs/cientos")['ContactShadows']
+    'CustomShaderMaterial': typeof import("@tresjs/cientos")['CustomShaderMaterial']
+    'Cylinder': typeof import("@tresjs/cientos")['Cylinder']
+    'Dodecahedron': typeof import("@tresjs/cientos")['Dodecahedron']
+    'Environment': typeof import("@tresjs/cientos")['Environment']
+    'FBXModel': typeof import("@tresjs/cientos")['FBXModel']
+    'Fbo': typeof import("@tresjs/cientos")['Fbo']
+    'Fit': typeof import("@tresjs/cientos")['Fit']
+    'GLTFModel': typeof import("@tresjs/cientos")['GLTFModel']
+    'GlobalAudio': typeof import("@tresjs/cientos")['GlobalAudio']
+    'HolographicMaterial': typeof import("@tresjs/cientos")['HolographicMaterial']
+    'Html': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Html']
+    'Icosahedron': typeof import("@tresjs/cientos")['Icosahedron']
+    'KeyboardControls': typeof import("@tresjs/cientos")['KeyboardControls']
+    'Lensflare': typeof import("@tresjs/cientos")['Lensflare']
+    'Levioso': typeof import("@tresjs/cientos")['Levioso']
+    'Lightformer': typeof import("@tresjs/cientos")['Lightformer']
+    'Line2': typeof import("@tresjs/cientos")['Line2']
+    'MapControls': typeof import("@tresjs/cientos")['MapControls']
+    'MeshGlassMaterial': typeof import("@tresjs/cientos")['MeshGlassMaterial']
+    'MeshReflectionMaterial': typeof import("@tresjs/cientos")['MeshReflectionMaterial']
+    'MeshWobbleMaterial': typeof import("@tresjs/cientos")['MeshWobbleMaterial']
+    'MouseParallax': typeof import("@tresjs/cientos")['MouseParallax']
+    'Ocean': typeof import("@tresjs/cientos")['Ocean']
+    'Octahedron': typeof import("@tresjs/cientos")['Octahedron']
+    'OrbitControls': typeof import("@tresjs/cientos")['OrbitControls']
+    'Plane': typeof import("@tresjs/cientos")['Plane']
+    'PointerLockControls': typeof import("@tresjs/cientos")['PointerLockControls']
+    'PositionalAudio': typeof import("@tresjs/cientos")['PositionalAudio']
+    'Precipitation': typeof import("@tresjs/cientos")['Precipitation']
+    'Reflector': typeof import("@tresjs/cientos")['Reflector']
+    'Ring': typeof import("@tresjs/cientos")['Ring']
+    'RoundedBox': typeof import("@tresjs/cientos")['RoundedBox']
+    'SVG': typeof import("@tresjs/cientos")['SVG']
+    'Sampler': typeof import("@tresjs/cientos")['Sampler']
+    'ScrollControls': typeof import("@tresjs/cientos")['ScrollControls']
+    'Sky': typeof import("@tresjs/cientos")['Sky']
+    'Smoke': typeof import("@tresjs/cientos")['Smoke']
+    'Sparkles': typeof import("@tresjs/cientos")['Sparkles']
+    'Sphere': typeof import("@tresjs/cientos")['Sphere']
+    'Stars': typeof import("@tresjs/cientos")['Stars']
+    'Stats': typeof import("@tresjs/cientos")['Stats']
+    'StatsGl': typeof import("@tresjs/cientos")['StatsGl']
+    'Superformula': typeof import("@tresjs/cientos")['Superformula']
+    'Tetrahedron': typeof import("@tresjs/cientos")['Tetrahedron']
+    'Text3D': typeof import("@tresjs/cientos")['Text3D']
+    'Torus': typeof import("@tresjs/cientos")['Torus']
+    'TorusKnot': typeof import("@tresjs/cientos")['TorusKnot']
+    'TransformControls': typeof import("@tresjs/cientos")['TransformControls']
+    'Tube': typeof import("@tresjs/cientos")['Tube']
+    'BloomPmndrs': typeof import("@tresjs/post-processing")['BloomPmndrs']
+    'DepthOfFieldPmndrs': typeof import("@tresjs/post-processing")['DepthOfFieldPmndrs']
+    'EffectComposer': typeof import("@tresjs/post-processing")['EffectComposer']
+    'EffectComposerPmndrs': typeof import("@tresjs/post-processing")['EffectComposerPmndrs']
+    'Glitch': typeof import("@tresjs/post-processing")['Glitch']
+    'GlitchPmndrs': typeof import("@tresjs/post-processing")['GlitchPmndrs']
+    'Halftone': typeof import("@tresjs/post-processing")['Halftone']
+    'NoisePmndrs': typeof import("@tresjs/post-processing")['NoisePmndrs']
+    'OutlinePmndrs': typeof import("@tresjs/post-processing")['OutlinePmndrs']
+    'Output': typeof import("@tresjs/post-processing")['Output']
+    'Pixelation': typeof import("@tresjs/post-processing")['Pixelation']
+    'PixelationPmndrs': typeof import("@tresjs/post-processing")['PixelationPmndrs']
+    'SMAA': typeof import("@tresjs/post-processing")['SMAA']
+    'UnrealBloom': typeof import("@tresjs/post-processing")['UnrealBloom']
+    'VignettePmndrs': typeof import("@tresjs/post-processing")['VignettePmndrs']
+    'TresCanvas': typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.client.vue")['default']
+    'TresCanvas': IslandComponent<typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.server.vue")['default']>
+    'NuxtPage': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/pages/runtime/page")['default']
+    'NoScript': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['NoScript']
+    'Link': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Link']
+    'Base': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Base']
+    'Title': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Title']
+    'Meta': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Meta']
+    'Style': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Style']
+    'Head': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Head']
+    'Body': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Body']
+    'NuxtIsland': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-island")['default']
+    'NuxtRouteAnnouncer': IslandComponent<typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder")['default']>
+      'LazyAlertMessage': typeof import("../components/AlertMessage.vue")['default']
+    'LazyButtonComponent': typeof import("../components/ButtonComponent.vue")['default']
+    'LazyChatMessage': typeof import("../components/ChatMessage.vue")['default']
+    'LazyConfirmCard': typeof import("../components/ConfirmCard.vue")['default']
+    'LazyContentContainer': typeof import("../components/ContentContainer.vue")['default']
+    'LazyDateInput': typeof import("../components/DateInput.vue")['default']
+    'LazyEmptyTranscriptScreen': typeof import("../components/EmptyTranscriptScreen.vue")['default']
+    'LazyFooterBar': typeof import("../components/FooterBar.vue")['default']
+    'LazyLoadingSpinner': typeof import("../components/LoadingSpinner.vue")['default']
+    'LazyLottieLooper': typeof import("../components/LottieLooper.vue")['default']
+    'LazyMicrophoneInput': typeof import("../components/MicrophoneInput.vue")['default']
+    'LazyNotificationTooltip': typeof import("../components/NotificationTooltip.vue")['default']
+    'LazySideBar': typeof import("../components/SideBar.vue")['default']
+    'LazySignInCard': typeof import("../components/SignInCard.vue")['default']
+    'LazySuggestionBar': typeof import("../components/SuggestionBar.vue")['default']
+    'LazySuggestionBox': typeof import("../components/SuggestionBox.vue")['default']
+    'LazyToolTip': typeof import("../components/ToolTip.vue")['default']
+    'LazyWaveformComponent': typeof import("../components/WaveformComponent.vue")['default']
+    'LazyAvatarModel': typeof import("../components/avatar/AvatarModel.vue")['default']
+    'LazyAvatarUpdater': typeof import("../components/avatar/AvatarUpdater.vue")['default']
+    'LazyDashboardAssignmentCard': typeof import("../components/dashboard/AssignmentCard.vue")['default']
+    'LazyDashboardAssignmentDetailsModal': typeof import("../components/dashboard/AssignmentDetailsModal.vue")['default']
+    'LazyDashboardDropdownComponent': typeof import("../components/dashboard/DropdownComponent.vue")['default']
+    'LazyDashboardFilterButton': typeof import("../components/dashboard/FilterButton.vue")['default']
+    'LazyDashboardMultiSelectFilter': typeof import("../components/dashboard/MultiSelectFilter.vue")['default']
+    'LazyDashboardPaginationComponent': typeof import("../components/dashboard/PaginationComponent.vue")['default']
+    'LazyDashboardSearchComponent': typeof import("../components/dashboard/SearchComponent.vue")['default']
+    'LazyDashboardSortableTableHeader': typeof import("../components/dashboard/SortableTableHeader.vue")['default']
+    'LazyDashboardStudentAssignmentsSection': typeof import("../components/dashboard/StudentAssignmentsSection.vue")['default']
+    'LazyDashboardStudentOverview': typeof import("../components/dashboard/StudentOverview.vue")['default']
+    'LazyDashboardStudentRow': typeof import("../components/dashboard/StudentRow.vue")['default']
+    'LazyDashboardStudentStatsCard': typeof import("../components/dashboard/StudentStatsCard.vue")['default']
+    'LazyDashboardStudentsTable': typeof import("../components/dashboard/StudentsTable.vue")['default']
+    'LazyRdsDropdown': typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdown.vue")['default']
+    'LazyRdsDropdownDivider': typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownDivider.vue")['default']
+    'LazyRdsDropdownHeader': typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownHeader.vue")['default']
+    'LazyRdsDropdownItem': typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownItem.vue")['default']
+    'LazyRdsModal': typeof import("../node_modules/@rds-vue-ui/rds-modal/RdsModal.vue")['default']
+    'LazyRdsPagination': typeof import("../node_modules/@rds-vue-ui/rds-pagination/RdsPagination.vue")['default']
+    'LazyTypeaheadSelect': typeof import("../node_modules/@rds-vue-ui/typeahead-select/TypeaheadSelect.vue")['default']
+    'LazyNuxtWelcome': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/welcome.vue")['default']
+    'LazyNuxtLayout': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-layout")['default']
+    'LazyNuxtErrorBoundary': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-error-boundary")['default']
+    'LazyClientOnly': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/client-only")['default']
+    'LazyDevOnly': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/dev-only")['default']
+    'LazyServerPlaceholder': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder")['default']
+    'LazyNuxtLink': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-link")['default']
+    'LazyNuxtLoadingIndicator': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-loading-indicator")['default']
+    'LazyNuxtRouteAnnouncer': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-route-announcer")['default']
+    'LazyNuxtImg': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtImg']
+    'LazyNuxtPicture': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtPicture']
+    'LazyAnimatedSprite': typeof import("@tresjs/cientos")['AnimatedSprite']
+    'LazyBackdrop': typeof import("@tresjs/cientos")['Backdrop']
+    'LazyBakeShadows': typeof import("@tresjs/cientos")['BakeShadows']
+    'LazyBaseCameraControls': typeof import("@tresjs/cientos")['BaseCameraControls']
+    'LazyBox': typeof import("@tresjs/cientos")['Box']
+    'LazyCameraControls': typeof import("@tresjs/cientos")['CameraControls']
+    'LazyCatmullRomCurve3': typeof import("@tresjs/cientos")['CatmullRomCurve3']
+    'LazyCircle': typeof import("@tresjs/cientos")['Circle']
+    'LazyCone': typeof import("@tresjs/cientos")['Cone']
+    'LazyContactShadows': typeof import("@tresjs/cientos")['ContactShadows']
+    'LazyCustomShaderMaterial': typeof import("@tresjs/cientos")['CustomShaderMaterial']
+    'LazyCylinder': typeof import("@tresjs/cientos")['Cylinder']
+    'LazyDodecahedron': typeof import("@tresjs/cientos")['Dodecahedron']
+    'LazyEnvironment': typeof import("@tresjs/cientos")['Environment']
+    'LazyFBXModel': typeof import("@tresjs/cientos")['FBXModel']
+    'LazyFbo': typeof import("@tresjs/cientos")['Fbo']
+    'LazyFit': typeof import("@tresjs/cientos")['Fit']
+    'LazyGLTFModel': typeof import("@tresjs/cientos")['GLTFModel']
+    'LazyGlobalAudio': typeof import("@tresjs/cientos")['GlobalAudio']
+    'LazyHolographicMaterial': typeof import("@tresjs/cientos")['HolographicMaterial']
+    'LazyHtml': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Html']
+    'LazyIcosahedron': typeof import("@tresjs/cientos")['Icosahedron']
+    'LazyKeyboardControls': typeof import("@tresjs/cientos")['KeyboardControls']
+    'LazyLensflare': typeof import("@tresjs/cientos")['Lensflare']
+    'LazyLevioso': typeof import("@tresjs/cientos")['Levioso']
+    'LazyLightformer': typeof import("@tresjs/cientos")['Lightformer']
+    'LazyLine2': typeof import("@tresjs/cientos")['Line2']
+    'LazyMapControls': typeof import("@tresjs/cientos")['MapControls']
+    'LazyMeshGlassMaterial': typeof import("@tresjs/cientos")['MeshGlassMaterial']
+    'LazyMeshReflectionMaterial': typeof import("@tresjs/cientos")['MeshReflectionMaterial']
+    'LazyMeshWobbleMaterial': typeof import("@tresjs/cientos")['MeshWobbleMaterial']
+    'LazyMouseParallax': typeof import("@tresjs/cientos")['MouseParallax']
+    'LazyOcean': typeof import("@tresjs/cientos")['Ocean']
+    'LazyOctahedron': typeof import("@tresjs/cientos")['Octahedron']
+    'LazyOrbitControls': typeof import("@tresjs/cientos")['OrbitControls']
+    'LazyPlane': typeof import("@tresjs/cientos")['Plane']
+    'LazyPointerLockControls': typeof import("@tresjs/cientos")['PointerLockControls']
+    'LazyPositionalAudio': typeof import("@tresjs/cientos")['PositionalAudio']
+    'LazyPrecipitation': typeof import("@tresjs/cientos")['Precipitation']
+    'LazyReflector': typeof import("@tresjs/cientos")['Reflector']
+    'LazyRing': typeof import("@tresjs/cientos")['Ring']
+    'LazyRoundedBox': typeof import("@tresjs/cientos")['RoundedBox']
+    'LazySVG': typeof import("@tresjs/cientos")['SVG']
+    'LazySampler': typeof import("@tresjs/cientos")['Sampler']
+    'LazyScrollControls': typeof import("@tresjs/cientos")['ScrollControls']
+    'LazySky': typeof import("@tresjs/cientos")['Sky']
+    'LazySmoke': typeof import("@tresjs/cientos")['Smoke']
+    'LazySparkles': typeof import("@tresjs/cientos")['Sparkles']
+    'LazySphere': typeof import("@tresjs/cientos")['Sphere']
+    'LazyStars': typeof import("@tresjs/cientos")['Stars']
+    'LazyStats': typeof import("@tresjs/cientos")['Stats']
+    'LazyStatsGl': typeof import("@tresjs/cientos")['StatsGl']
+    'LazySuperformula': typeof import("@tresjs/cientos")['Superformula']
+    'LazyTetrahedron': typeof import("@tresjs/cientos")['Tetrahedron']
+    'LazyText3D': typeof import("@tresjs/cientos")['Text3D']
+    'LazyTorus': typeof import("@tresjs/cientos")['Torus']
+    'LazyTorusKnot': typeof import("@tresjs/cientos")['TorusKnot']
+    'LazyTransformControls': typeof import("@tresjs/cientos")['TransformControls']
+    'LazyTube': typeof import("@tresjs/cientos")['Tube']
+    'LazyBloomPmndrs': typeof import("@tresjs/post-processing")['BloomPmndrs']
+    'LazyDepthOfFieldPmndrs': typeof import("@tresjs/post-processing")['DepthOfFieldPmndrs']
+    'LazyEffectComposer': typeof import("@tresjs/post-processing")['EffectComposer']
+    'LazyEffectComposerPmndrs': typeof import("@tresjs/post-processing")['EffectComposerPmndrs']
+    'LazyGlitch': typeof import("@tresjs/post-processing")['Glitch']
+    'LazyGlitchPmndrs': typeof import("@tresjs/post-processing")['GlitchPmndrs']
+    'LazyHalftone': typeof import("@tresjs/post-processing")['Halftone']
+    'LazyNoisePmndrs': typeof import("@tresjs/post-processing")['NoisePmndrs']
+    'LazyOutlinePmndrs': typeof import("@tresjs/post-processing")['OutlinePmndrs']
+    'LazyOutput': typeof import("@tresjs/post-processing")['Output']
+    'LazyPixelation': typeof import("@tresjs/post-processing")['Pixelation']
+    'LazyPixelationPmndrs': typeof import("@tresjs/post-processing")['PixelationPmndrs']
+    'LazySMAA': typeof import("@tresjs/post-processing")['SMAA']
+    'LazyUnrealBloom': typeof import("@tresjs/post-processing")['UnrealBloom']
+    'LazyVignettePmndrs': typeof import("@tresjs/post-processing")['VignettePmndrs']
+    'LazyTresCanvas': typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.client.vue")['default']
+    'LazyTresCanvas': IslandComponent<typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.server.vue")['default']>
+    'LazyNuxtPage': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/pages/runtime/page")['default']
+    'LazyNoScript': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['NoScript']
+    'LazyLink': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Link']
+    'LazyBase': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Base']
+    'LazyTitle': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Title']
+    'LazyMeta': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Meta']
+    'LazyStyle': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Style']
+    'LazyHead': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Head']
+    'LazyBody': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Body']
+    'LazyNuxtIsland': typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-island")['default']
+    'LazyNuxtRouteAnnouncer': IslandComponent<typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder")['default']>
 }
 
-declare module "vue" {
-  export interface GlobalComponents extends _GlobalComponents {}
+declare module 'vue' {
+  export interface GlobalComponents extends _GlobalComponents { }
 }
 
-export const AlertMessage: (typeof import("../components/AlertMessage.vue"))["default"];
-export const ButtonComponent: (typeof import("../components/ButtonComponent.vue"))["default"];
-export const ChatMessage: (typeof import("../components/ChatMessage.vue"))["default"];
-export const ConfirmCard: (typeof import("../components/ConfirmCard.vue"))["default"];
-export const ContentContainer: (typeof import("../components/ContentContainer.vue"))["default"];
-export const DateInput: (typeof import("../components/DateInput.vue"))["default"];
-export const FooterBar: (typeof import("../components/FooterBar.vue"))["default"];
-export const LoadingSpinner: (typeof import("../components/LoadingSpinner.vue"))["default"];
-export const LottieLooper: (typeof import("../components/LottieLooper.vue"))["default"];
-export const MicrophoneInput: (typeof import("../components/MicrophoneInput.vue"))["default"];
-export const SideBar: (typeof import("../components/SideBar.vue"))["default"];
-export const SignInCard: (typeof import("../components/SignInCard.vue"))["default"];
-export const SuggestionBar: (typeof import("../components/SuggestionBar.vue"))["default"];
-export const SuggestionBox: (typeof import("../components/SuggestionBox.vue"))["default"];
-export const ToolTip: (typeof import("../components/ToolTip.vue"))["default"];
-export const WaveformComponent: (typeof import("../components/WaveformComponent.vue"))["default"];
-export const AvatarModel: (typeof import("../components/avatar/AvatarModel.vue"))["default"];
-export const AvatarUpdater: (typeof import("../components/avatar/AvatarUpdater.vue"))["default"];
-export const DashboardAssignmentCard: (typeof import("../components/dashboard/AssignmentCard.vue"))["default"];
-export const DashboardAssignmentDetailsModal: (typeof import("../components/dashboard/AssignmentDetailsModal.vue"))["default"];
-export const DashboardDropdownComponent: (typeof import("../components/dashboard/DropdownComponent.vue"))["default"];
-export const DashboardFilterButton: (typeof import("../components/dashboard/FilterButton.vue"))["default"];
-export const DashboardMultiSelectFilter: (typeof import("../components/dashboard/MultiSelectFilter.vue"))["default"];
-export const DashboardPaginationComponent: (typeof import("../components/dashboard/PaginationComponent.vue"))["default"];
-export const DashboardSearchComponent: (typeof import("../components/dashboard/SearchComponent.vue"))["default"];
-export const DashboardSortableTableHeader: (typeof import("../components/dashboard/SortableTableHeader.vue"))["default"];
-export const DashboardStudentAssignmentsSection: (typeof import("../components/dashboard/StudentAssignmentsSection.vue"))["default"];
-export const DashboardStudentOverview: (typeof import("../components/dashboard/StudentOverview.vue"))["default"];
-export const DashboardStudentRow: (typeof import("../components/dashboard/StudentRow.vue"))["default"];
-export const DashboardStudentStatsCard: (typeof import("../components/dashboard/StudentStatsCard.vue"))["default"];
-export const DashboardStudentsTable: (typeof import("../components/dashboard/StudentsTable.vue"))["default"];
-export const RdsDropdown: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdown.vue"))["default"];
-export const RdsDropdownDivider: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownDivider.vue"))["default"];
-export const RdsDropdownHeader: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownHeader.vue"))["default"];
-export const RdsDropdownItem: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownItem.vue"))["default"];
-export const RdsModal: (typeof import("../node_modules/@rds-vue-ui/rds-modal/RdsModal.vue"))["default"];
-export const RdsPagination: (typeof import("../node_modules/@rds-vue-ui/rds-pagination/RdsPagination.vue"))["default"];
-export const TypeaheadSelect: (typeof import("../node_modules/@rds-vue-ui/typeahead-select/TypeaheadSelect.vue"))["default"];
-export const NuxtWelcome: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/welcome.vue"))["default"];
-export const NuxtLayout: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-layout"))["default"];
-export const NuxtErrorBoundary: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-error-boundary"))["default"];
-export const ClientOnly: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/client-only"))["default"];
-export const DevOnly: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/dev-only"))["default"];
-export const ServerPlaceholder: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder"))["default"];
-export const NuxtLink: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-link"))["default"];
-export const NuxtLoadingIndicator: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-loading-indicator"))["default"];
-export const NuxtRouteAnnouncer: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-route-announcer"))["default"];
-export const NuxtImg: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs"))["NuxtImg"];
-export const NuxtPicture: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs"))["NuxtPicture"];
-export const AnimatedSprite: (typeof import("@tresjs/cientos"))["AnimatedSprite"];
-export const Backdrop: (typeof import("@tresjs/cientos"))["Backdrop"];
-export const BakeShadows: (typeof import("@tresjs/cientos"))["BakeShadows"];
-export const BaseCameraControls: (typeof import("@tresjs/cientos"))["BaseCameraControls"];
-export const Box: (typeof import("@tresjs/cientos"))["Box"];
-export const CameraControls: (typeof import("@tresjs/cientos"))["CameraControls"];
-export const CatmullRomCurve3: (typeof import("@tresjs/cientos"))["CatmullRomCurve3"];
-export const Circle: (typeof import("@tresjs/cientos"))["Circle"];
-export const Cone: (typeof import("@tresjs/cientos"))["Cone"];
-export const ContactShadows: (typeof import("@tresjs/cientos"))["ContactShadows"];
-export const CustomShaderMaterial: (typeof import("@tresjs/cientos"))["CustomShaderMaterial"];
-export const Cylinder: (typeof import("@tresjs/cientos"))["Cylinder"];
-export const Dodecahedron: (typeof import("@tresjs/cientos"))["Dodecahedron"];
-export const Environment: (typeof import("@tresjs/cientos"))["Environment"];
-export const FBXModel: (typeof import("@tresjs/cientos"))["FBXModel"];
-export const Fbo: (typeof import("@tresjs/cientos"))["Fbo"];
-export const Fit: (typeof import("@tresjs/cientos"))["Fit"];
-export const GLTFModel: (typeof import("@tresjs/cientos"))["GLTFModel"];
-export const GlobalAudio: (typeof import("@tresjs/cientos"))["GlobalAudio"];
-export const HolographicMaterial: (typeof import("@tresjs/cientos"))["HolographicMaterial"];
-export const Html: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Html"];
-export const Icosahedron: (typeof import("@tresjs/cientos"))["Icosahedron"];
-export const KeyboardControls: (typeof import("@tresjs/cientos"))["KeyboardControls"];
-export const Lensflare: (typeof import("@tresjs/cientos"))["Lensflare"];
-export const Levioso: (typeof import("@tresjs/cientos"))["Levioso"];
-export const Lightformer: (typeof import("@tresjs/cientos"))["Lightformer"];
-export const Line2: (typeof import("@tresjs/cientos"))["Line2"];
-export const MapControls: (typeof import("@tresjs/cientos"))["MapControls"];
-export const MeshGlassMaterial: (typeof import("@tresjs/cientos"))["MeshGlassMaterial"];
-export const MeshReflectionMaterial: (typeof import("@tresjs/cientos"))["MeshReflectionMaterial"];
-export const MeshWobbleMaterial: (typeof import("@tresjs/cientos"))["MeshWobbleMaterial"];
-export const MouseParallax: (typeof import("@tresjs/cientos"))["MouseParallax"];
-export const Ocean: (typeof import("@tresjs/cientos"))["Ocean"];
-export const Octahedron: (typeof import("@tresjs/cientos"))["Octahedron"];
-export const OrbitControls: (typeof import("@tresjs/cientos"))["OrbitControls"];
-export const Plane: (typeof import("@tresjs/cientos"))["Plane"];
-export const PointerLockControls: (typeof import("@tresjs/cientos"))["PointerLockControls"];
-export const PositionalAudio: (typeof import("@tresjs/cientos"))["PositionalAudio"];
-export const Precipitation: (typeof import("@tresjs/cientos"))["Precipitation"];
-export const Reflector: (typeof import("@tresjs/cientos"))["Reflector"];
-export const Ring: (typeof import("@tresjs/cientos"))["Ring"];
-export const RoundedBox: (typeof import("@tresjs/cientos"))["RoundedBox"];
-export const SVG: (typeof import("@tresjs/cientos"))["SVG"];
-export const Sampler: (typeof import("@tresjs/cientos"))["Sampler"];
-export const ScrollControls: (typeof import("@tresjs/cientos"))["ScrollControls"];
-export const Sky: (typeof import("@tresjs/cientos"))["Sky"];
-export const Smoke: (typeof import("@tresjs/cientos"))["Smoke"];
-export const Sparkles: (typeof import("@tresjs/cientos"))["Sparkles"];
-export const Sphere: (typeof import("@tresjs/cientos"))["Sphere"];
-export const Stars: (typeof import("@tresjs/cientos"))["Stars"];
-export const Stats: (typeof import("@tresjs/cientos"))["Stats"];
-export const StatsGl: (typeof import("@tresjs/cientos"))["StatsGl"];
-export const Superformula: (typeof import("@tresjs/cientos"))["Superformula"];
-export const Tetrahedron: (typeof import("@tresjs/cientos"))["Tetrahedron"];
-export const Text3D: (typeof import("@tresjs/cientos"))["Text3D"];
-export const Torus: (typeof import("@tresjs/cientos"))["Torus"];
-export const TorusKnot: (typeof import("@tresjs/cientos"))["TorusKnot"];
-export const TransformControls: (typeof import("@tresjs/cientos"))["TransformControls"];
-export const Tube: (typeof import("@tresjs/cientos"))["Tube"];
-export const BloomPmndrs: (typeof import("@tresjs/post-processing"))["BloomPmndrs"];
-export const DepthOfFieldPmndrs: (typeof import("@tresjs/post-processing"))["DepthOfFieldPmndrs"];
-export const EffectComposer: (typeof import("@tresjs/post-processing"))["EffectComposer"];
-export const EffectComposerPmndrs: (typeof import("@tresjs/post-processing"))["EffectComposerPmndrs"];
-export const Glitch: (typeof import("@tresjs/post-processing"))["Glitch"];
-export const GlitchPmndrs: (typeof import("@tresjs/post-processing"))["GlitchPmndrs"];
-export const Halftone: (typeof import("@tresjs/post-processing"))["Halftone"];
-export const NoisePmndrs: (typeof import("@tresjs/post-processing"))["NoisePmndrs"];
-export const OutlinePmndrs: (typeof import("@tresjs/post-processing"))["OutlinePmndrs"];
-export const Output: (typeof import("@tresjs/post-processing"))["Output"];
-export const Pixelation: (typeof import("@tresjs/post-processing"))["Pixelation"];
-export const PixelationPmndrs: (typeof import("@tresjs/post-processing"))["PixelationPmndrs"];
-export const SMAA: (typeof import("@tresjs/post-processing"))["SMAA"];
-export const UnrealBloom: (typeof import("@tresjs/post-processing"))["UnrealBloom"];
-export const VignettePmndrs: (typeof import("@tresjs/post-processing"))["VignettePmndrs"];
-export const TresCanvas: (typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.client.vue"))["default"];
-export const TresCanvas: IslandComponent<
-  (typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.server.vue"))["default"]
->;
-export const NuxtPage: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/pages/runtime/page"))["default"];
-export const NoScript: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["NoScript"];
-export const Link: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Link"];
-export const Base: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Base"];
-export const Title: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Title"];
-export const Meta: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Meta"];
-export const Style: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Style"];
-export const Head: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Head"];
-export const Body: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Body"];
-export const NuxtIsland: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-island"))["default"];
-export const NuxtRouteAnnouncer: IslandComponent<
-  (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder"))["default"]
->;
-export const LazyAlertMessage: (typeof import("../components/AlertMessage.vue"))["default"];
-export const LazyButtonComponent: (typeof import("../components/ButtonComponent.vue"))["default"];
-export const LazyChatMessage: (typeof import("../components/ChatMessage.vue"))["default"];
-export const LazyConfirmCard: (typeof import("../components/ConfirmCard.vue"))["default"];
-export const LazyContentContainer: (typeof import("../components/ContentContainer.vue"))["default"];
-export const LazyDateInput: (typeof import("../components/DateInput.vue"))["default"];
-export const LazyFooterBar: (typeof import("../components/FooterBar.vue"))["default"];
-export const LazyLoadingSpinner: (typeof import("../components/LoadingSpinner.vue"))["default"];
-export const LazyLottieLooper: (typeof import("../components/LottieLooper.vue"))["default"];
-export const LazyMicrophoneInput: (typeof import("../components/MicrophoneInput.vue"))["default"];
-export const LazySideBar: (typeof import("../components/SideBar.vue"))["default"];
-export const LazySignInCard: (typeof import("../components/SignInCard.vue"))["default"];
-export const LazySuggestionBar: (typeof import("../components/SuggestionBar.vue"))["default"];
-export const LazySuggestionBox: (typeof import("../components/SuggestionBox.vue"))["default"];
-export const LazyToolTip: (typeof import("../components/ToolTip.vue"))["default"];
-export const LazyWaveformComponent: (typeof import("../components/WaveformComponent.vue"))["default"];
-export const LazyAvatarModel: (typeof import("../components/avatar/AvatarModel.vue"))["default"];
-export const LazyAvatarUpdater: (typeof import("../components/avatar/AvatarUpdater.vue"))["default"];
-export const LazyDashboardAssignmentCard: (typeof import("../components/dashboard/AssignmentCard.vue"))["default"];
-export const LazyDashboardAssignmentDetailsModal: (typeof import("../components/dashboard/AssignmentDetailsModal.vue"))["default"];
-export const LazyDashboardDropdownComponent: (typeof import("../components/dashboard/DropdownComponent.vue"))["default"];
-export const LazyDashboardFilterButton: (typeof import("../components/dashboard/FilterButton.vue"))["default"];
-export const LazyDashboardMultiSelectFilter: (typeof import("../components/dashboard/MultiSelectFilter.vue"))["default"];
-export const LazyDashboardPaginationComponent: (typeof import("../components/dashboard/PaginationComponent.vue"))["default"];
-export const LazyDashboardSearchComponent: (typeof import("../components/dashboard/SearchComponent.vue"))["default"];
-export const LazyDashboardSortableTableHeader: (typeof import("../components/dashboard/SortableTableHeader.vue"))["default"];
-export const LazyDashboardStudentAssignmentsSection: (typeof import("../components/dashboard/StudentAssignmentsSection.vue"))["default"];
-export const LazyDashboardStudentOverview: (typeof import("../components/dashboard/StudentOverview.vue"))["default"];
-export const LazyDashboardStudentRow: (typeof import("../components/dashboard/StudentRow.vue"))["default"];
-export const LazyDashboardStudentStatsCard: (typeof import("../components/dashboard/StudentStatsCard.vue"))["default"];
-export const LazyDashboardStudentsTable: (typeof import("../components/dashboard/StudentsTable.vue"))["default"];
-export const LazyRdsDropdown: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdown.vue"))["default"];
-export const LazyRdsDropdownDivider: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownDivider.vue"))["default"];
-export const LazyRdsDropdownHeader: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownHeader.vue"))["default"];
-export const LazyRdsDropdownItem: (typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownItem.vue"))["default"];
-export const LazyRdsModal: (typeof import("../node_modules/@rds-vue-ui/rds-modal/RdsModal.vue"))["default"];
-export const LazyRdsPagination: (typeof import("../node_modules/@rds-vue-ui/rds-pagination/RdsPagination.vue"))["default"];
-export const LazyTypeaheadSelect: (typeof import("../node_modules/@rds-vue-ui/typeahead-select/TypeaheadSelect.vue"))["default"];
-export const LazyNuxtWelcome: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/welcome.vue"))["default"];
-export const LazyNuxtLayout: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-layout"))["default"];
-export const LazyNuxtErrorBoundary: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-error-boundary"))["default"];
-export const LazyClientOnly: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/client-only"))["default"];
-export const LazyDevOnly: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/dev-only"))["default"];
-export const LazyServerPlaceholder: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder"))["default"];
-export const LazyNuxtLink: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-link"))["default"];
-export const LazyNuxtLoadingIndicator: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-loading-indicator"))["default"];
-export const LazyNuxtRouteAnnouncer: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-route-announcer"))["default"];
-export const LazyNuxtImg: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs"))["NuxtImg"];
-export const LazyNuxtPicture: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs"))["NuxtPicture"];
-export const LazyAnimatedSprite: (typeof import("@tresjs/cientos"))["AnimatedSprite"];
-export const LazyBackdrop: (typeof import("@tresjs/cientos"))["Backdrop"];
-export const LazyBakeShadows: (typeof import("@tresjs/cientos"))["BakeShadows"];
-export const LazyBaseCameraControls: (typeof import("@tresjs/cientos"))["BaseCameraControls"];
-export const LazyBox: (typeof import("@tresjs/cientos"))["Box"];
-export const LazyCameraControls: (typeof import("@tresjs/cientos"))["CameraControls"];
-export const LazyCatmullRomCurve3: (typeof import("@tresjs/cientos"))["CatmullRomCurve3"];
-export const LazyCircle: (typeof import("@tresjs/cientos"))["Circle"];
-export const LazyCone: (typeof import("@tresjs/cientos"))["Cone"];
-export const LazyContactShadows: (typeof import("@tresjs/cientos"))["ContactShadows"];
-export const LazyCustomShaderMaterial: (typeof import("@tresjs/cientos"))["CustomShaderMaterial"];
-export const LazyCylinder: (typeof import("@tresjs/cientos"))["Cylinder"];
-export const LazyDodecahedron: (typeof import("@tresjs/cientos"))["Dodecahedron"];
-export const LazyEnvironment: (typeof import("@tresjs/cientos"))["Environment"];
-export const LazyFBXModel: (typeof import("@tresjs/cientos"))["FBXModel"];
-export const LazyFbo: (typeof import("@tresjs/cientos"))["Fbo"];
-export const LazyFit: (typeof import("@tresjs/cientos"))["Fit"];
-export const LazyGLTFModel: (typeof import("@tresjs/cientos"))["GLTFModel"];
-export const LazyGlobalAudio: (typeof import("@tresjs/cientos"))["GlobalAudio"];
-export const LazyHolographicMaterial: (typeof import("@tresjs/cientos"))["HolographicMaterial"];
-export const LazyHtml: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Html"];
-export const LazyIcosahedron: (typeof import("@tresjs/cientos"))["Icosahedron"];
-export const LazyKeyboardControls: (typeof import("@tresjs/cientos"))["KeyboardControls"];
-export const LazyLensflare: (typeof import("@tresjs/cientos"))["Lensflare"];
-export const LazyLevioso: (typeof import("@tresjs/cientos"))["Levioso"];
-export const LazyLightformer: (typeof import("@tresjs/cientos"))["Lightformer"];
-export const LazyLine2: (typeof import("@tresjs/cientos"))["Line2"];
-export const LazyMapControls: (typeof import("@tresjs/cientos"))["MapControls"];
-export const LazyMeshGlassMaterial: (typeof import("@tresjs/cientos"))["MeshGlassMaterial"];
-export const LazyMeshReflectionMaterial: (typeof import("@tresjs/cientos"))["MeshReflectionMaterial"];
-export const LazyMeshWobbleMaterial: (typeof import("@tresjs/cientos"))["MeshWobbleMaterial"];
-export const LazyMouseParallax: (typeof import("@tresjs/cientos"))["MouseParallax"];
-export const LazyOcean: (typeof import("@tresjs/cientos"))["Ocean"];
-export const LazyOctahedron: (typeof import("@tresjs/cientos"))["Octahedron"];
-export const LazyOrbitControls: (typeof import("@tresjs/cientos"))["OrbitControls"];
-export const LazyPlane: (typeof import("@tresjs/cientos"))["Plane"];
-export const LazyPointerLockControls: (typeof import("@tresjs/cientos"))["PointerLockControls"];
-export const LazyPositionalAudio: (typeof import("@tresjs/cientos"))["PositionalAudio"];
-export const LazyPrecipitation: (typeof import("@tresjs/cientos"))["Precipitation"];
-export const LazyReflector: (typeof import("@tresjs/cientos"))["Reflector"];
-export const LazyRing: (typeof import("@tresjs/cientos"))["Ring"];
-export const LazyRoundedBox: (typeof import("@tresjs/cientos"))["RoundedBox"];
-export const LazySVG: (typeof import("@tresjs/cientos"))["SVG"];
-export const LazySampler: (typeof import("@tresjs/cientos"))["Sampler"];
-export const LazyScrollControls: (typeof import("@tresjs/cientos"))["ScrollControls"];
-export const LazySky: (typeof import("@tresjs/cientos"))["Sky"];
-export const LazySmoke: (typeof import("@tresjs/cientos"))["Smoke"];
-export const LazySparkles: (typeof import("@tresjs/cientos"))["Sparkles"];
-export const LazySphere: (typeof import("@tresjs/cientos"))["Sphere"];
-export const LazyStars: (typeof import("@tresjs/cientos"))["Stars"];
-export const LazyStats: (typeof import("@tresjs/cientos"))["Stats"];
-export const LazyStatsGl: (typeof import("@tresjs/cientos"))["StatsGl"];
-export const LazySuperformula: (typeof import("@tresjs/cientos"))["Superformula"];
-export const LazyTetrahedron: (typeof import("@tresjs/cientos"))["Tetrahedron"];
-export const LazyText3D: (typeof import("@tresjs/cientos"))["Text3D"];
-export const LazyTorus: (typeof import("@tresjs/cientos"))["Torus"];
-export const LazyTorusKnot: (typeof import("@tresjs/cientos"))["TorusKnot"];
-export const LazyTransformControls: (typeof import("@tresjs/cientos"))["TransformControls"];
-export const LazyTube: (typeof import("@tresjs/cientos"))["Tube"];
-export const LazyBloomPmndrs: (typeof import("@tresjs/post-processing"))["BloomPmndrs"];
-export const LazyDepthOfFieldPmndrs: (typeof import("@tresjs/post-processing"))["DepthOfFieldPmndrs"];
-export const LazyEffectComposer: (typeof import("@tresjs/post-processing"))["EffectComposer"];
-export const LazyEffectComposerPmndrs: (typeof import("@tresjs/post-processing"))["EffectComposerPmndrs"];
-export const LazyGlitch: (typeof import("@tresjs/post-processing"))["Glitch"];
-export const LazyGlitchPmndrs: (typeof import("@tresjs/post-processing"))["GlitchPmndrs"];
-export const LazyHalftone: (typeof import("@tresjs/post-processing"))["Halftone"];
-export const LazyNoisePmndrs: (typeof import("@tresjs/post-processing"))["NoisePmndrs"];
-export const LazyOutlinePmndrs: (typeof import("@tresjs/post-processing"))["OutlinePmndrs"];
-export const LazyOutput: (typeof import("@tresjs/post-processing"))["Output"];
-export const LazyPixelation: (typeof import("@tresjs/post-processing"))["Pixelation"];
-export const LazyPixelationPmndrs: (typeof import("@tresjs/post-processing"))["PixelationPmndrs"];
-export const LazySMAA: (typeof import("@tresjs/post-processing"))["SMAA"];
-export const LazyUnrealBloom: (typeof import("@tresjs/post-processing"))["UnrealBloom"];
-export const LazyVignettePmndrs: (typeof import("@tresjs/post-processing"))["VignettePmndrs"];
-export const LazyTresCanvas: (typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.client.vue"))["default"];
-export const LazyTresCanvas: IslandComponent<
-  (typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.server.vue"))["default"]
->;
-export const LazyNuxtPage: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/pages/runtime/page"))["default"];
-export const LazyNoScript: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["NoScript"];
-export const LazyLink: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Link"];
-export const LazyBase: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Base"];
-export const LazyTitle: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Title"];
-export const LazyMeta: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Meta"];
-export const LazyStyle: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Style"];
-export const LazyHead: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Head"];
-export const LazyBody: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components"))["Body"];
-export const LazyNuxtIsland: (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-island"))["default"];
-export const LazyNuxtRouteAnnouncer: IslandComponent<
-  (typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder"))["default"]
->;
+export const AlertMessage: typeof import("../components/AlertMessage.vue")['default']
+export const ButtonComponent: typeof import("../components/ButtonComponent.vue")['default']
+export const ChatMessage: typeof import("../components/ChatMessage.vue")['default']
+export const ConfirmCard: typeof import("../components/ConfirmCard.vue")['default']
+export const ContentContainer: typeof import("../components/ContentContainer.vue")['default']
+export const DateInput: typeof import("../components/DateInput.vue")['default']
+export const EmptyTranscriptScreen: typeof import("../components/EmptyTranscriptScreen.vue")['default']
+export const FooterBar: typeof import("../components/FooterBar.vue")['default']
+export const LoadingSpinner: typeof import("../components/LoadingSpinner.vue")['default']
+export const LottieLooper: typeof import("../components/LottieLooper.vue")['default']
+export const MicrophoneInput: typeof import("../components/MicrophoneInput.vue")['default']
+export const NotificationTooltip: typeof import("../components/NotificationTooltip.vue")['default']
+export const SideBar: typeof import("../components/SideBar.vue")['default']
+export const SignInCard: typeof import("../components/SignInCard.vue")['default']
+export const SuggestionBar: typeof import("../components/SuggestionBar.vue")['default']
+export const SuggestionBox: typeof import("../components/SuggestionBox.vue")['default']
+export const ToolTip: typeof import("../components/ToolTip.vue")['default']
+export const WaveformComponent: typeof import("../components/WaveformComponent.vue")['default']
+export const AvatarModel: typeof import("../components/avatar/AvatarModel.vue")['default']
+export const AvatarUpdater: typeof import("../components/avatar/AvatarUpdater.vue")['default']
+export const DashboardAssignmentCard: typeof import("../components/dashboard/AssignmentCard.vue")['default']
+export const DashboardAssignmentDetailsModal: typeof import("../components/dashboard/AssignmentDetailsModal.vue")['default']
+export const DashboardDropdownComponent: typeof import("../components/dashboard/DropdownComponent.vue")['default']
+export const DashboardFilterButton: typeof import("../components/dashboard/FilterButton.vue")['default']
+export const DashboardMultiSelectFilter: typeof import("../components/dashboard/MultiSelectFilter.vue")['default']
+export const DashboardPaginationComponent: typeof import("../components/dashboard/PaginationComponent.vue")['default']
+export const DashboardSearchComponent: typeof import("../components/dashboard/SearchComponent.vue")['default']
+export const DashboardSortableTableHeader: typeof import("../components/dashboard/SortableTableHeader.vue")['default']
+export const DashboardStudentAssignmentsSection: typeof import("../components/dashboard/StudentAssignmentsSection.vue")['default']
+export const DashboardStudentOverview: typeof import("../components/dashboard/StudentOverview.vue")['default']
+export const DashboardStudentRow: typeof import("../components/dashboard/StudentRow.vue")['default']
+export const DashboardStudentStatsCard: typeof import("../components/dashboard/StudentStatsCard.vue")['default']
+export const DashboardStudentsTable: typeof import("../components/dashboard/StudentsTable.vue")['default']
+export const RdsDropdown: typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdown.vue")['default']
+export const RdsDropdownDivider: typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownDivider.vue")['default']
+export const RdsDropdownHeader: typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownHeader.vue")['default']
+export const RdsDropdownItem: typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownItem.vue")['default']
+export const RdsModal: typeof import("../node_modules/@rds-vue-ui/rds-modal/RdsModal.vue")['default']
+export const RdsPagination: typeof import("../node_modules/@rds-vue-ui/rds-pagination/RdsPagination.vue")['default']
+export const TypeaheadSelect: typeof import("../node_modules/@rds-vue-ui/typeahead-select/TypeaheadSelect.vue")['default']
+export const NuxtWelcome: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/welcome.vue")['default']
+export const NuxtLayout: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-layout")['default']
+export const NuxtErrorBoundary: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-error-boundary")['default']
+export const ClientOnly: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/client-only")['default']
+export const DevOnly: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/dev-only")['default']
+export const ServerPlaceholder: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder")['default']
+export const NuxtLink: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-link")['default']
+export const NuxtLoadingIndicator: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-loading-indicator")['default']
+export const NuxtRouteAnnouncer: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-route-announcer")['default']
+export const NuxtImg: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtImg']
+export const NuxtPicture: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtPicture']
+export const AnimatedSprite: typeof import("@tresjs/cientos")['AnimatedSprite']
+export const Backdrop: typeof import("@tresjs/cientos")['Backdrop']
+export const BakeShadows: typeof import("@tresjs/cientos")['BakeShadows']
+export const BaseCameraControls: typeof import("@tresjs/cientos")['BaseCameraControls']
+export const Box: typeof import("@tresjs/cientos")['Box']
+export const CameraControls: typeof import("@tresjs/cientos")['CameraControls']
+export const CatmullRomCurve3: typeof import("@tresjs/cientos")['CatmullRomCurve3']
+export const Circle: typeof import("@tresjs/cientos")['Circle']
+export const Cone: typeof import("@tresjs/cientos")['Cone']
+export const ContactShadows: typeof import("@tresjs/cientos")['ContactShadows']
+export const CustomShaderMaterial: typeof import("@tresjs/cientos")['CustomShaderMaterial']
+export const Cylinder: typeof import("@tresjs/cientos")['Cylinder']
+export const Dodecahedron: typeof import("@tresjs/cientos")['Dodecahedron']
+export const Environment: typeof import("@tresjs/cientos")['Environment']
+export const FBXModel: typeof import("@tresjs/cientos")['FBXModel']
+export const Fbo: typeof import("@tresjs/cientos")['Fbo']
+export const Fit: typeof import("@tresjs/cientos")['Fit']
+export const GLTFModel: typeof import("@tresjs/cientos")['GLTFModel']
+export const GlobalAudio: typeof import("@tresjs/cientos")['GlobalAudio']
+export const HolographicMaterial: typeof import("@tresjs/cientos")['HolographicMaterial']
+export const Html: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Html']
+export const Icosahedron: typeof import("@tresjs/cientos")['Icosahedron']
+export const KeyboardControls: typeof import("@tresjs/cientos")['KeyboardControls']
+export const Lensflare: typeof import("@tresjs/cientos")['Lensflare']
+export const Levioso: typeof import("@tresjs/cientos")['Levioso']
+export const Lightformer: typeof import("@tresjs/cientos")['Lightformer']
+export const Line2: typeof import("@tresjs/cientos")['Line2']
+export const MapControls: typeof import("@tresjs/cientos")['MapControls']
+export const MeshGlassMaterial: typeof import("@tresjs/cientos")['MeshGlassMaterial']
+export const MeshReflectionMaterial: typeof import("@tresjs/cientos")['MeshReflectionMaterial']
+export const MeshWobbleMaterial: typeof import("@tresjs/cientos")['MeshWobbleMaterial']
+export const MouseParallax: typeof import("@tresjs/cientos")['MouseParallax']
+export const Ocean: typeof import("@tresjs/cientos")['Ocean']
+export const Octahedron: typeof import("@tresjs/cientos")['Octahedron']
+export const OrbitControls: typeof import("@tresjs/cientos")['OrbitControls']
+export const Plane: typeof import("@tresjs/cientos")['Plane']
+export const PointerLockControls: typeof import("@tresjs/cientos")['PointerLockControls']
+export const PositionalAudio: typeof import("@tresjs/cientos")['PositionalAudio']
+export const Precipitation: typeof import("@tresjs/cientos")['Precipitation']
+export const Reflector: typeof import("@tresjs/cientos")['Reflector']
+export const Ring: typeof import("@tresjs/cientos")['Ring']
+export const RoundedBox: typeof import("@tresjs/cientos")['RoundedBox']
+export const SVG: typeof import("@tresjs/cientos")['SVG']
+export const Sampler: typeof import("@tresjs/cientos")['Sampler']
+export const ScrollControls: typeof import("@tresjs/cientos")['ScrollControls']
+export const Sky: typeof import("@tresjs/cientos")['Sky']
+export const Smoke: typeof import("@tresjs/cientos")['Smoke']
+export const Sparkles: typeof import("@tresjs/cientos")['Sparkles']
+export const Sphere: typeof import("@tresjs/cientos")['Sphere']
+export const Stars: typeof import("@tresjs/cientos")['Stars']
+export const Stats: typeof import("@tresjs/cientos")['Stats']
+export const StatsGl: typeof import("@tresjs/cientos")['StatsGl']
+export const Superformula: typeof import("@tresjs/cientos")['Superformula']
+export const Tetrahedron: typeof import("@tresjs/cientos")['Tetrahedron']
+export const Text3D: typeof import("@tresjs/cientos")['Text3D']
+export const Torus: typeof import("@tresjs/cientos")['Torus']
+export const TorusKnot: typeof import("@tresjs/cientos")['TorusKnot']
+export const TransformControls: typeof import("@tresjs/cientos")['TransformControls']
+export const Tube: typeof import("@tresjs/cientos")['Tube']
+export const BloomPmndrs: typeof import("@tresjs/post-processing")['BloomPmndrs']
+export const DepthOfFieldPmndrs: typeof import("@tresjs/post-processing")['DepthOfFieldPmndrs']
+export const EffectComposer: typeof import("@tresjs/post-processing")['EffectComposer']
+export const EffectComposerPmndrs: typeof import("@tresjs/post-processing")['EffectComposerPmndrs']
+export const Glitch: typeof import("@tresjs/post-processing")['Glitch']
+export const GlitchPmndrs: typeof import("@tresjs/post-processing")['GlitchPmndrs']
+export const Halftone: typeof import("@tresjs/post-processing")['Halftone']
+export const NoisePmndrs: typeof import("@tresjs/post-processing")['NoisePmndrs']
+export const OutlinePmndrs: typeof import("@tresjs/post-processing")['OutlinePmndrs']
+export const Output: typeof import("@tresjs/post-processing")['Output']
+export const Pixelation: typeof import("@tresjs/post-processing")['Pixelation']
+export const PixelationPmndrs: typeof import("@tresjs/post-processing")['PixelationPmndrs']
+export const SMAA: typeof import("@tresjs/post-processing")['SMAA']
+export const UnrealBloom: typeof import("@tresjs/post-processing")['UnrealBloom']
+export const VignettePmndrs: typeof import("@tresjs/post-processing")['VignettePmndrs']
+export const TresCanvas: typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.client.vue")['default']
+export const TresCanvas: IslandComponent<typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.server.vue")['default']>
+export const NuxtPage: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/pages/runtime/page")['default']
+export const NoScript: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['NoScript']
+export const Link: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Link']
+export const Base: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Base']
+export const Title: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Title']
+export const Meta: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Meta']
+export const Style: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Style']
+export const Head: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Head']
+export const Body: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Body']
+export const NuxtIsland: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-island")['default']
+export const NuxtRouteAnnouncer: IslandComponent<typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder")['default']>
+export const LazyAlertMessage: typeof import("../components/AlertMessage.vue")['default']
+export const LazyButtonComponent: typeof import("../components/ButtonComponent.vue")['default']
+export const LazyChatMessage: typeof import("../components/ChatMessage.vue")['default']
+export const LazyConfirmCard: typeof import("../components/ConfirmCard.vue")['default']
+export const LazyContentContainer: typeof import("../components/ContentContainer.vue")['default']
+export const LazyDateInput: typeof import("../components/DateInput.vue")['default']
+export const LazyEmptyTranscriptScreen: typeof import("../components/EmptyTranscriptScreen.vue")['default']
+export const LazyFooterBar: typeof import("../components/FooterBar.vue")['default']
+export const LazyLoadingSpinner: typeof import("../components/LoadingSpinner.vue")['default']
+export const LazyLottieLooper: typeof import("../components/LottieLooper.vue")['default']
+export const LazyMicrophoneInput: typeof import("../components/MicrophoneInput.vue")['default']
+export const LazyNotificationTooltip: typeof import("../components/NotificationTooltip.vue")['default']
+export const LazySideBar: typeof import("../components/SideBar.vue")['default']
+export const LazySignInCard: typeof import("../components/SignInCard.vue")['default']
+export const LazySuggestionBar: typeof import("../components/SuggestionBar.vue")['default']
+export const LazySuggestionBox: typeof import("../components/SuggestionBox.vue")['default']
+export const LazyToolTip: typeof import("../components/ToolTip.vue")['default']
+export const LazyWaveformComponent: typeof import("../components/WaveformComponent.vue")['default']
+export const LazyAvatarModel: typeof import("../components/avatar/AvatarModel.vue")['default']
+export const LazyAvatarUpdater: typeof import("../components/avatar/AvatarUpdater.vue")['default']
+export const LazyDashboardAssignmentCard: typeof import("../components/dashboard/AssignmentCard.vue")['default']
+export const LazyDashboardAssignmentDetailsModal: typeof import("../components/dashboard/AssignmentDetailsModal.vue")['default']
+export const LazyDashboardDropdownComponent: typeof import("../components/dashboard/DropdownComponent.vue")['default']
+export const LazyDashboardFilterButton: typeof import("../components/dashboard/FilterButton.vue")['default']
+export const LazyDashboardMultiSelectFilter: typeof import("../components/dashboard/MultiSelectFilter.vue")['default']
+export const LazyDashboardPaginationComponent: typeof import("../components/dashboard/PaginationComponent.vue")['default']
+export const LazyDashboardSearchComponent: typeof import("../components/dashboard/SearchComponent.vue")['default']
+export const LazyDashboardSortableTableHeader: typeof import("../components/dashboard/SortableTableHeader.vue")['default']
+export const LazyDashboardStudentAssignmentsSection: typeof import("../components/dashboard/StudentAssignmentsSection.vue")['default']
+export const LazyDashboardStudentOverview: typeof import("../components/dashboard/StudentOverview.vue")['default']
+export const LazyDashboardStudentRow: typeof import("../components/dashboard/StudentRow.vue")['default']
+export const LazyDashboardStudentStatsCard: typeof import("../components/dashboard/StudentStatsCard.vue")['default']
+export const LazyDashboardStudentsTable: typeof import("../components/dashboard/StudentsTable.vue")['default']
+export const LazyRdsDropdown: typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdown.vue")['default']
+export const LazyRdsDropdownDivider: typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownDivider.vue")['default']
+export const LazyRdsDropdownHeader: typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownHeader.vue")['default']
+export const LazyRdsDropdownItem: typeof import("../node_modules/@rds-vue-ui/rds-dropdown/RdsDropdownItem.vue")['default']
+export const LazyRdsModal: typeof import("../node_modules/@rds-vue-ui/rds-modal/RdsModal.vue")['default']
+export const LazyRdsPagination: typeof import("../node_modules/@rds-vue-ui/rds-pagination/RdsPagination.vue")['default']
+export const LazyTypeaheadSelect: typeof import("../node_modules/@rds-vue-ui/typeahead-select/TypeaheadSelect.vue")['default']
+export const LazyNuxtWelcome: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/welcome.vue")['default']
+export const LazyNuxtLayout: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-layout")['default']
+export const LazyNuxtErrorBoundary: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-error-boundary")['default']
+export const LazyClientOnly: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/client-only")['default']
+export const LazyDevOnly: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/dev-only")['default']
+export const LazyServerPlaceholder: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder")['default']
+export const LazyNuxtLink: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-link")['default']
+export const LazyNuxtLoadingIndicator: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-loading-indicator")['default']
+export const LazyNuxtRouteAnnouncer: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-route-announcer")['default']
+export const LazyNuxtImg: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtImg']
+export const LazyNuxtPicture: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtPicture']
+export const LazyAnimatedSprite: typeof import("@tresjs/cientos")['AnimatedSprite']
+export const LazyBackdrop: typeof import("@tresjs/cientos")['Backdrop']
+export const LazyBakeShadows: typeof import("@tresjs/cientos")['BakeShadows']
+export const LazyBaseCameraControls: typeof import("@tresjs/cientos")['BaseCameraControls']
+export const LazyBox: typeof import("@tresjs/cientos")['Box']
+export const LazyCameraControls: typeof import("@tresjs/cientos")['CameraControls']
+export const LazyCatmullRomCurve3: typeof import("@tresjs/cientos")['CatmullRomCurve3']
+export const LazyCircle: typeof import("@tresjs/cientos")['Circle']
+export const LazyCone: typeof import("@tresjs/cientos")['Cone']
+export const LazyContactShadows: typeof import("@tresjs/cientos")['ContactShadows']
+export const LazyCustomShaderMaterial: typeof import("@tresjs/cientos")['CustomShaderMaterial']
+export const LazyCylinder: typeof import("@tresjs/cientos")['Cylinder']
+export const LazyDodecahedron: typeof import("@tresjs/cientos")['Dodecahedron']
+export const LazyEnvironment: typeof import("@tresjs/cientos")['Environment']
+export const LazyFBXModel: typeof import("@tresjs/cientos")['FBXModel']
+export const LazyFbo: typeof import("@tresjs/cientos")['Fbo']
+export const LazyFit: typeof import("@tresjs/cientos")['Fit']
+export const LazyGLTFModel: typeof import("@tresjs/cientos")['GLTFModel']
+export const LazyGlobalAudio: typeof import("@tresjs/cientos")['GlobalAudio']
+export const LazyHolographicMaterial: typeof import("@tresjs/cientos")['HolographicMaterial']
+export const LazyHtml: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Html']
+export const LazyIcosahedron: typeof import("@tresjs/cientos")['Icosahedron']
+export const LazyKeyboardControls: typeof import("@tresjs/cientos")['KeyboardControls']
+export const LazyLensflare: typeof import("@tresjs/cientos")['Lensflare']
+export const LazyLevioso: typeof import("@tresjs/cientos")['Levioso']
+export const LazyLightformer: typeof import("@tresjs/cientos")['Lightformer']
+export const LazyLine2: typeof import("@tresjs/cientos")['Line2']
+export const LazyMapControls: typeof import("@tresjs/cientos")['MapControls']
+export const LazyMeshGlassMaterial: typeof import("@tresjs/cientos")['MeshGlassMaterial']
+export const LazyMeshReflectionMaterial: typeof import("@tresjs/cientos")['MeshReflectionMaterial']
+export const LazyMeshWobbleMaterial: typeof import("@tresjs/cientos")['MeshWobbleMaterial']
+export const LazyMouseParallax: typeof import("@tresjs/cientos")['MouseParallax']
+export const LazyOcean: typeof import("@tresjs/cientos")['Ocean']
+export const LazyOctahedron: typeof import("@tresjs/cientos")['Octahedron']
+export const LazyOrbitControls: typeof import("@tresjs/cientos")['OrbitControls']
+export const LazyPlane: typeof import("@tresjs/cientos")['Plane']
+export const LazyPointerLockControls: typeof import("@tresjs/cientos")['PointerLockControls']
+export const LazyPositionalAudio: typeof import("@tresjs/cientos")['PositionalAudio']
+export const LazyPrecipitation: typeof import("@tresjs/cientos")['Precipitation']
+export const LazyReflector: typeof import("@tresjs/cientos")['Reflector']
+export const LazyRing: typeof import("@tresjs/cientos")['Ring']
+export const LazyRoundedBox: typeof import("@tresjs/cientos")['RoundedBox']
+export const LazySVG: typeof import("@tresjs/cientos")['SVG']
+export const LazySampler: typeof import("@tresjs/cientos")['Sampler']
+export const LazyScrollControls: typeof import("@tresjs/cientos")['ScrollControls']
+export const LazySky: typeof import("@tresjs/cientos")['Sky']
+export const LazySmoke: typeof import("@tresjs/cientos")['Smoke']
+export const LazySparkles: typeof import("@tresjs/cientos")['Sparkles']
+export const LazySphere: typeof import("@tresjs/cientos")['Sphere']
+export const LazyStars: typeof import("@tresjs/cientos")['Stars']
+export const LazyStats: typeof import("@tresjs/cientos")['Stats']
+export const LazyStatsGl: typeof import("@tresjs/cientos")['StatsGl']
+export const LazySuperformula: typeof import("@tresjs/cientos")['Superformula']
+export const LazyTetrahedron: typeof import("@tresjs/cientos")['Tetrahedron']
+export const LazyText3D: typeof import("@tresjs/cientos")['Text3D']
+export const LazyTorus: typeof import("@tresjs/cientos")['Torus']
+export const LazyTorusKnot: typeof import("@tresjs/cientos")['TorusKnot']
+export const LazyTransformControls: typeof import("@tresjs/cientos")['TransformControls']
+export const LazyTube: typeof import("@tresjs/cientos")['Tube']
+export const LazyBloomPmndrs: typeof import("@tresjs/post-processing")['BloomPmndrs']
+export const LazyDepthOfFieldPmndrs: typeof import("@tresjs/post-processing")['DepthOfFieldPmndrs']
+export const LazyEffectComposer: typeof import("@tresjs/post-processing")['EffectComposer']
+export const LazyEffectComposerPmndrs: typeof import("@tresjs/post-processing")['EffectComposerPmndrs']
+export const LazyGlitch: typeof import("@tresjs/post-processing")['Glitch']
+export const LazyGlitchPmndrs: typeof import("@tresjs/post-processing")['GlitchPmndrs']
+export const LazyHalftone: typeof import("@tresjs/post-processing")['Halftone']
+export const LazyNoisePmndrs: typeof import("@tresjs/post-processing")['NoisePmndrs']
+export const LazyOutlinePmndrs: typeof import("@tresjs/post-processing")['OutlinePmndrs']
+export const LazyOutput: typeof import("@tresjs/post-processing")['Output']
+export const LazyPixelation: typeof import("@tresjs/post-processing")['Pixelation']
+export const LazyPixelationPmndrs: typeof import("@tresjs/post-processing")['PixelationPmndrs']
+export const LazySMAA: typeof import("@tresjs/post-processing")['SMAA']
+export const LazyUnrealBloom: typeof import("@tresjs/post-processing")['UnrealBloom']
+export const LazyVignettePmndrs: typeof import("@tresjs/post-processing")['VignettePmndrs']
+export const LazyTresCanvas: typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.client.vue")['default']
+export const LazyTresCanvas: IslandComponent<typeof import("../node_modules/.pnpm/@tresjs+nuxt@3.0.7_magicast@0.3.5_postcss@8.5.0_rollup@4.30.1_three@0.172.0_vite@6.0.7_@types_6ixszlo525ymc2yd5lv3dyooja/node_modules/@tresjs/nuxt/dist/runtime/TresCanvas.server.vue")['default']>
+export const LazyNuxtPage: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/pages/runtime/page")['default']
+export const LazyNoScript: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['NoScript']
+export const LazyLink: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Link']
+export const LazyBase: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Base']
+export const LazyTitle: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Title']
+export const LazyMeta: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Meta']
+export const LazyStyle: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Style']
+export const LazyHead: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Head']
+export const LazyBody: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/head/runtime/components")['Body']
+export const LazyNuxtIsland: typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/nuxt-island")['default']
+export const LazyNuxtRouteAnnouncer: IslandComponent<typeof import("../node_modules/.pnpm/nuxt@3.15.1_@parcel+watcher@2.5.0_@types+node@22.10.6_db0@0.2.1_eslint@9.17.0_jiti@2.4.2__ior_naijn5ddtjyoe377a4d7pnamkm/node_modules/nuxt/dist/app/components/server-placeholder")['default']>
 
-export const componentNames: string[];
+export const componentNames: string[]

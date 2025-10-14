@@ -24,8 +24,8 @@ importers:
         specifier: ^1.2.14
         version: 1.2.14
       '@lottiefiles/dotlottie-vue':
-        specifier: ^0.5.6
-        version: 0.5.6(vue@3.5.13(typescript@5.7.3))
+        specifier: ^0.10.4
+        version: 0.10.4(vue@3.5.13(typescript@5.7.3))
       '@nuxt/eslint':
         specifier: 0.7.4
         version: 0.7.4(@vue/compiler-sfc@3.5.13)(eslint@9.17.0(jiti@2.4.2))(magicast@0.3.5)(rollup@4.30.1)(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.83.1)(terser@5.43.1)(tsx@4.19.2)(yaml@2.7.0))
@@ -1034,13 +1034,13 @@ packages:
   '@kwsites/promise-deferred@1.1.1':
     resolution: {integrity: sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==}
 
-  '@lottiefiles/dotlottie-vue@0.5.6':
-    resolution: {integrity: sha512-qOnkbGq059rx5sO34woXVk/8XzOlX33is+1o8o8jetCwYm7QyAwmWLHyj6de7eQBCsP5dHOchuDKb7GUtVLIRQ==}
+  '@lottiefiles/dotlottie-vue@0.10.4':
+    resolution: {integrity: sha512-3A2JKV9wtpWVF5IIl/vFZIoWoe7qey+tQq7v76H+yjhGhAkHIpQHlpDWGJ7AD6TjQymjQHgZfyzPiLxTcd5HVQ==}
     peerDependencies:
       vue: ^3.3.4
 
-  '@lottiefiles/dotlottie-web@0.40.1':
-    resolution: {integrity: sha512-iNz1rr8zRTSJ0xCZEPeoCX6YnaNhBdkF7gJWhSa8bwB4NTrYZm0vAuC0jF/aLLhU7q9nf6ykxffrz0Sf4JPSPg==}
+  '@lottiefiles/dotlottie-web@0.54.0':
+    resolution: {integrity: sha512-Jc/n4i9siOXo9/1CVhKkrWC8pxxsKqKwxYfrL4DFQP/cLUAeAO0TqFPQFx9Klh1m7T+/1RPFriycOcF8gW3ZtQ==}
 
   '@mapbox/node-pre-gyp@2.0.0-rc.0':
     resolution: {integrity: sha512-nhSMNprz3WmeRvd8iUs5JqkKr0Ncx46JtPxM3AhXes84XpSJfmIwKeWXRpsr53S7kqPkQfPhzrMFUxSNb23qSA==}
@@ -7013,12 +7013,12 @@ snapshots:
 
   '@kwsites/promise-deferred@1.1.1': {}
 
-  '@lottiefiles/dotlottie-vue@0.5.6(vue@3.5.13(typescript@5.7.3))':
+  '@lottiefiles/dotlottie-vue@0.10.4(vue@3.5.13(typescript@5.7.3))':
     dependencies:
-      '@lottiefiles/dotlottie-web': 0.40.1
+      '@lottiefiles/dotlottie-web': 0.54.0
       vue: 3.5.13(typescript@5.7.3)
 
-  '@lottiefiles/dotlottie-web@0.40.1': {}
+  '@lottiefiles/dotlottie-web@0.54.0': {}
 
   '@mapbox/node-pre-gyp@2.0.0-rc.0':
     dependencies:

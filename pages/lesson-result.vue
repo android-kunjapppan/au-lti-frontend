@@ -8,7 +8,9 @@
         </Suspense>
       </div>
       <template #left>
-        <div class="left-content pretty-scrollbar">
+        <div
+          class="left-content pretty-scrollbar"
+          :class="{ 'justify-content-center': isTest }">
           <div class="feedback-title">
             <h1 id="lesson-completed-title" class="text-success feedback-title">
               <span>
@@ -31,7 +33,7 @@
               @click="handleTryAgain">
               Practice Again
               <i-fa6-solid:chevron-right
-                class="feedback-icon ms-space-xxs"
+                class="feedback-icon ms-space-xxs thick-arrow"
                 aria-hidden="true" />
             </button>
           </div>
@@ -113,8 +115,9 @@ import LottieLooper from "~/components/LottieLooper.vue";
 const avatarStore = useAvatarStore();
 
 definePageMeta({
-  middleware: "conversation-auth",
+  middleware: ["conversation-auth", "test-navigation"],
 });
+
 const appStore = useAppStore();
 const messageStore = useMessageStore();
 const { lessonFeedback, isTest, isLoadingUserInfo, userInfo } =
@@ -133,18 +136,23 @@ const completionMessage = computed(() =>
 
 const showPracticeAgainButton = computed(() => !isTest.value);
 
+// Load avatar and user info
+onMounted(async () => {
+  await avatarStore.loadModel();
+  await appStore.fetchUserInfo();
+});
+
 const handleTryAgain = async () => {
+  // Prevent trying again for showcase assignments
+  if (isTest.value) {
+    return;
+  }
   /**
    * TODO: Update to actual logic of marking conversation as isActive: false, and start a new conversation
    */
   messageStore.clearMessages();
   await navigateTo("/lesson-content");
 };
-
-onMounted(async () => {
-  await avatarStore.loadModel();
-  await appStore.fetchUserInfo();
-});
 </script>
 
 <style scoped>
@@ -269,10 +277,9 @@ onMounted(async () => {
   height: 100%;
 }
 
-.animation-section {
+:deep(.animation-section) {
   flex: 1;
-  width: 33.33%;
-  height: 100%;
+  flex-basis: 33.33%;
 }
 
 .full-page-animation {
@@ -282,14 +289,25 @@ onMounted(async () => {
 
 .practice-again-button {
   transition: all 0.2s ease;
+  border: none !important;
 }
 
 .practice-again-button:hover {
   background: var(--rds-dark-3);
+  border: none !important;
 }
 
 .practice-again-button:hover .feedback-icon {
   animation: wiggle-right 2s ease-in-out;
+}
+
+.feedback-icon {
+  font-size: 0.6rem;
+  margin-top: 1px;
+}
+
+.thick-arrow {
+  transform: scale(1.1);
 }
 
 @keyframes wiggle-right {

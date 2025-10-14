@@ -135,6 +135,7 @@ export const useAudioRecording = (
         onDataAvailable(event);
 
         // Store the final audio blob for EVENT_AUDIO_END
+        // This is crucial for short recordings where the blob arrives after stopping
         if (event.data && event.data.size > 0) {
           finalAudioBlob.value = event.data;
         }

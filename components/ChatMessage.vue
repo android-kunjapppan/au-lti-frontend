@@ -59,6 +59,7 @@
         </ButtonComponent>
 
         <ButtonComponent
+          ref="feedbackButtonRef"
           :disabled="isDisabledDuringBotResponse"
           :loading="feedbackState?.isLoading"
           v-if="message.type === 'user'"
@@ -75,6 +76,7 @@
         </ButtonComponent>
 
         <ButtonComponent
+          ref="translateButtonRef"
           :disabled="isDisabledDuringBotResponse"
           :loading="translationState?.isLoading"
           v-if="!hasBotError"
@@ -128,6 +130,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import { DEFAULT_REQUEST_TIMEOUT_LENGTH } from "~/utils/constants";
 import { useAppStore } from "../stores/appStore";
 import { useMessageStore } from "../stores/messageStore";
 import ButtonComponent from "./ButtonComponent.vue";
@@ -142,6 +146,10 @@ const playLoading = ref(false);
 const playSlowLoading = ref(false);
 let playTimeout: NodeJS.Timeout | null = null;
 let playSlowTimeout: NodeJS.Timeout | null = null;
+
+// Template refs for buttons
+const feedbackButtonRef = useTemplateRef("feedbackButtonRef");
+const translateButtonRef = useTemplateRef("translateButtonRef");
 
 const props = defineProps<{
   messageId: string;
@@ -175,12 +183,9 @@ const setPlayLoading = (loading: boolean, speed?: "normal" | "slow") => {
 
     if (loading) {
       // Set 2-minute timeout for play slow loading
-      playSlowTimeout = setTimeout(
-        () => {
-          playSlowLoading.value = false;
-        },
-        2 * 60 * 1000
-      );
+      playSlowTimeout = setTimeout(() => {
+        playSlowLoading.value = false;
+      }, DEFAULT_REQUEST_TIMEOUT_LENGTH);
     } else {
       // Clear timeout when loading stops
       if (playSlowTimeout) {
@@ -193,12 +198,9 @@ const setPlayLoading = (loading: boolean, speed?: "normal" | "slow") => {
 
     if (loading) {
       // Set 2-minute timeout for play loading
-      playTimeout = setTimeout(
-        () => {
-          playLoading.value = false;
-        },
-        2 * 60 * 1000
-      );
+      playTimeout = setTimeout(() => {
+        playLoading.value = false;
+      }, DEFAULT_REQUEST_TIMEOUT_LENGTH);
     } else {
       // Clear timeout when loading stops
       if (playTimeout) {
@@ -229,39 +231,44 @@ defineExpose({
 });
 
 const handleFeedback = () => {
-  if (props.message.type === "user") {
-    if (!showFeedback.value) {
-      // Check if feedback already exists in the message
-      if (props.message.feedback) {
-        showFeedback.value = true;
-      }
-      // Check if feedback is already being loaded or waiting for response
-      else if (
-        messageStore.isWaitingForFeedback(props.messageId) ||
-        feedbackState.value?.isLoading
-      ) {
-        // Don't send another request if already loading
-        return;
-      }
-      // Only send request if feedback doesn't exist and isn't being loaded
-      else {
-        messageStore.clearFeedbackError(props.messageId);
-        emit("feedback", props.messageId);
-      }
-    } else {
-      showFeedback.value = false;
+  // If panel is closed, try to get feedback
+  if (!showFeedback.value) {
+    // Check if feedback already exists in the message (only for user messages)
+    if (
+      props.message.type === "user" &&
+      (props.message as UserMessage).feedback
+    ) {
+      // Feedback already exists, just show it
+      showFeedback.value = true;
+      return;
     }
+    // Check if feedback is already being loaded
+    else if (
+      messageStore.isWaitingForFeedback(props.messageId) ||
+      feedbackState.value?.isLoading
+    ) {
+      // Don't send another request if already loading
+      return;
+    }
+    // Only send request if feedback doesn't exist and isn't being loaded
+    else {
+      messageStore.clearFeedbackError(props.messageId);
+      messageStore.setFeedbackLoadingWithTimeout(props.messageId);
+      emit("feedback", props.messageId);
+    }
+  } else {
+    // Panel is open - close it
+    showFeedback.value = false;
   }
 };
 
 const handleTranslate = () => {
-  if (showTranslated.value) {
-    showTranslated.value = false;
-  } else {
-    showTranslated.value = true;
+  // If panel is closed, try to get translation
+  if (!showTranslated.value) {
     // Check if translation already exists in the message
     if (props.message.translation) {
       // Translation already exists, just show it
+      showTranslated.value = true;
       return;
     }
     // Check if translation is already being loaded
@@ -278,6 +285,9 @@ const handleTranslate = () => {
       messageStore.setTranslationLoadingWithTimeout(props.messageId);
       emit("translate", props.messageId);
     }
+  } else {
+    // Panel is open - close it
+    showTranslated.value = false;
   }
 };
 
@@ -354,10 +364,14 @@ const hasAudioAvailable = computed(() => {
     return false; // User messages don't have audio
   }
 
-  // For bot messages, check if audio is stored or if message is complete
+  // For bot messages, ONLY enable play button if:
+  // 1. Audio is explicitly marked as "stored" (IndexedDB save completed)
   return (
     props.message.audio === "stored" ||
-    (!props.message.isLoading && hasValidText.value)
+    (props.message.isComplete &&
+      !props.message.isLoading &&
+      hasValidText.value &&
+      !props.message.audio)
   );
 });
 
@@ -433,8 +447,8 @@ const playButtonText = computed(() => {
 });
 
 const playSlowButtonText = computed(() => {
-  if (playSlowLoading.value) return "Loading...";
-  return isAudioPlayingSlow.value ? "Stop" : "Play slower";
+  if (playSlowLoading.value) return "Play slower";
+  return isAudioPlayingSlow.value ? "Stop play slower" : "Play slower";
 });
 
 watch(props.message, (newValue) => {
@@ -558,24 +572,43 @@ watch(
   }
 );
 
-// Watch for translation error states to reset loading
+// Watch for errors - reset buttons when errors occur
 watch(
   () => messageStore.getTranslationState(props.messageId)?.error,
   (translationError) => {
-    if (translationError && translationState.value?.isLoading) {
-      // Reset the translation loading state when an error occurs
-      messageStore.setIsTranslationLoading(props.messageId, false);
+    if (translationError) {
+      translateButtonRef.value?.resetActiveState();
     }
   }
 );
 
-// Watch for feedback error states to reset loading
 watch(
   () => messageStore.getFeedbackState(props.messageId)?.error,
   (feedbackError) => {
-    if (feedbackError && feedbackState.value?.isLoading) {
-      // Reset the feedback loading state when an error occurs
-      messageStore.setIsFeedbackLoading(props.messageId, false);
+    if (feedbackError) {
+      feedbackButtonRef.value?.resetActiveState();
+    }
+  }
+);
+
+// Watch for translation success to open panel
+watch(
+  () => props.message.translation,
+  (translation) => {
+    // If translation was added and panel is not open, open it
+    if (translation && !showTranslated.value) {
+      showTranslated.value = true;
+    }
+  }
+);
+
+// Watch for feedback success to open panel
+watch(
+  () => (props.message as UserMessage).feedback,
+  (feedback) => {
+    // If feedback was added and panel is not open, open it
+    if (feedback && !showFeedback.value) {
+      showFeedback.value = true;
     }
   }
 );

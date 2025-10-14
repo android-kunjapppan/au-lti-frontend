@@ -6,9 +6,14 @@
     v-else
     class="container-fluid pt-space-xl px-space-md d-flex flex-column gap-space-md">
     <!-- Dashboard Header -->
-    <h1 class="h1-small">
-      {{ isInstructor ? "Instructor Dashboard" : "Student Dashboard" }}
-    </h1>
+    <div class="d-flex flex-column gap-space-xxs">
+      <span class="language-buddy-text text-dark-3 mb-space-xxxs"
+        >Language Buddy™</span
+      >
+      <h1 class="h1-small">
+        {{ isInstructor ? "Instructor Dashboard" : "Student Dashboard" }}
+      </h1>
+    </div>
 
     <!-- Instructor View -->
     <div v-if="isInstructor" class="d-flex flex-column gap-space-md">
@@ -77,17 +82,25 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted } from "vue";
-import AssignmentDetailsModal from "~/components/dashboard/AssignmentDetailsModal.vue";
+import AssignmentDetailsModal, {
+  type SendFeedbackPayload,
+} from "~/components/dashboard/AssignmentDetailsModal.vue";
 import FilterButton from "~/components/dashboard/FilterButton.vue";
 import PaginationComponent from "~/components/dashboard/PaginationComponent.vue";
 import SearchComponent from "~/components/dashboard/SearchComponent.vue";
+import type { SortEventPayload } from "~/components/dashboard/SortableTableHeader.vue";
 import StudentAssignmentsSection from "~/components/dashboard/StudentAssignmentsSection.vue";
 import StudentOverview from "~/components/dashboard/StudentOverview.vue";
 import StudentsTable from "~/components/dashboard/StudentsTable.vue";
 import LoadingSpinner from "~/components/LoadingSpinner.vue";
-import { useDashboardData } from "~/composables/useDashboardData";
+import {
+  useDashboardData,
+  type Assignment,
+  type ProcessedAssignment,
+} from "~/composables/useDashboardData";
+import type { DashboardFilters } from "~/types/types";
 
 definePageMeta({
   middleware: "dashboard-auth",
@@ -96,14 +109,11 @@ definePageMeta({
 // Use the dashboard data composable
 const {
   students,
-  filteredStudents,
   currentStudent,
   isInstructor,
-  allStudents,
   pagination,
   openStudentAccordion,
   currentPage,
-  pageSize,
   searchQuery,
   dateFilter,
   sortColumn,
@@ -115,7 +125,6 @@ const {
   pageStart,
   pageEnd,
   searchConversations,
-  fetchAllStudents,
   loadNextPage,
   loadPreviousPage,
   refreshAudioUrls,
@@ -125,11 +134,11 @@ const {
 
 // Modal state
 const showModal = ref(false);
-const selectedAssignment = ref(null);
 const isLoading = ref(false);
+const selectedAssignment = ref<ProcessedAssignment | null>(null);
 
 // Event handlers
-async function handleSearch(query) {
+async function handleSearch(query: string) {
   try {
     // Close any open accordion when search changes
     openStudentAccordion.value = null;
@@ -162,7 +171,7 @@ async function handleSearch(query) {
   }
 }
 
-async function handleFilterChange(filters) {
+async function handleFilterChange(filters: DashboardFilters | null) {
   try {
     // Close any open accordion when filters change
     openStudentAccordion.value = null;
@@ -195,7 +204,7 @@ async function handleFilterChange(filters) {
   }
 }
 
-function handleSort(sortData) {
+function handleSort(sortData: SortEventPayload) {
   const { column, direction } = sortData;
 
   // Close any open accordion when sorting changes
@@ -214,7 +223,7 @@ function handleSort(sortData) {
   applySorting();
 }
 
-function toggleStudentAccordion(index) {
+function toggleStudentAccordion(index: number) {
   if (openStudentAccordion.value === index) {
     openStudentAccordion.value = null;
   } else {
@@ -222,7 +231,7 @@ function toggleStudentAccordion(index) {
   }
 }
 
-function showAssignmentDetails(assignment) {
+function showAssignmentDetails(assignment: Assignment) {
   selectedAssignment.value = assignment;
   showModal.value = true;
 }
@@ -232,13 +241,18 @@ function closeModal() {
   selectedAssignment.value = null;
 }
 
-async function handleModalFeedback({ assignmentId, submissionId, feedback }) {
+async function handleModalFeedback({
+  assignmentId,
+  submissionId,
+  feedback,
+}: SendFeedbackPayload) {
   try {
     await sendInstructorFeedback({ submissionId, feedback });
 
     if (selectedAssignment.value?.submissions) {
       const submission = selectedAssignment.value.submissions.find(
-        (s) => s.id === submissionId || s.submissionId === submissionId
+        (s) =>
+          s.submissionId === submissionId || s.submissionId === submissionId
       );
       if (submission) {
         submission.instructorFeedback = feedback;
@@ -250,7 +264,8 @@ async function handleModalFeedback({ assignmentId, submissionId, feedback }) {
         (a) => a.id === assignmentId
       );
       const submission = assignment?.submissions?.find(
-        (s) => s.id === submissionId || s.submissionId === submissionId
+        (s) =>
+          s.submissionId === submissionId || s.submissionId === submissionId
       );
       if (submission) {
         submission.instructorFeedback = feedback;
@@ -269,7 +284,6 @@ onMounted(() => {
   searchConversations("", null, pagination.value.itemsPerPage).finally(() => {
     isLoading.value = false;
   });
-  // fetchAllStudents();
 
   // Set up audio URL refresh interval
   setInterval(
@@ -286,6 +300,12 @@ onMounted(() => {
   font-family: "Arial", sans-serif;
   background: var(--rds-dashboard-bg);
   min-height: 100vh;
+}
+
+.language-buddy-text {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 20.381px;
 }
 
 .card {

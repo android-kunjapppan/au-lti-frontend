@@ -10,14 +10,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-interface Option {
+export interface DropdownOption {
   text: string;
   value: string | null;
 }
 
 interface Props {
   id?: string;
-  options: Option[];
+  options: DropdownOption[];
   disabled?: boolean;
   clearable?: boolean;
   alphaSort?: boolean;
@@ -28,7 +28,7 @@ interface Props {
   actionVariant?: string;
   preselectOpacity?: string;
   preselect?: boolean;
-  modelValue?: Option | null;
+  modelValue?: DropdownOption | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -47,11 +47,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: "update:modelValue" | "change", value: Option | null): void;
+  (e: "update:modelValue" | "change", value: DropdownOption | null): void;
 }>();
 
 // Initialize with first option if no modelValue is provided and preselect is true
-const getInitialValue = (): Option | null => {
+const getInitialValue = (): DropdownOption | null => {
   if (props.modelValue) {
     return props.modelValue;
   }
@@ -62,7 +62,7 @@ const getInitialValue = (): Option | null => {
   return null;
 };
 
-const selectedValue = ref<Option | null>(getInitialValue());
+const selectedValue = ref<DropdownOption | null>(getInitialValue());
 
 // Watch for external modelValue changes
 watch(
@@ -101,7 +101,7 @@ const typeaheadProps = computed(() => ({
 }));
 
 // Handle value changes
-const handleValueChange = (value: Option | null) => {
+const handleValueChange = (value: DropdownOption | null) => {
   selectedValue.value = value;
   emit("update:modelValue", value);
   emit("change", value);

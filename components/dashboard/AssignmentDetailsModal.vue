@@ -311,29 +311,62 @@
   </RdsModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { RdsModal } from "@rds-vue-ui/rds-modal";
 import { computed, ref, watch } from "vue";
+import type { LessonFeedback } from "~/types/types";
 import { formatDateTime } from "~/utils/dateUtils";
 import { calculateTotalPracticeTime } from "~/utils/timeUtils";
-import DropdownComponent from "./DropdownComponent.vue";
+import DropdownComponent, {
+  type DropdownOption,
+} from "./DropdownComponent.vue";
 
-const props = defineProps({
-  visible: { type: Boolean, default: false },
-  assignment: { type: Object, default: null },
-  isInstructor: { type: Boolean, default: true },
+export interface SendFeedbackPayload {
+  assignmentId: string;
+  submissionId: string;
+  feedback: string;
+}
+
+interface SelectedSubmission {
+  text: string;
+  value: string;
+}
+
+interface FeedbackState {
+  isSubmitted: boolean;
+  isEditing: boolean;
+}
+
+interface FeedbackStates {
+  [key: string]: FeedbackState;
+}
+
+interface Props {
+  visible: boolean;
+  assignment: Assignment | null;
+  isInstructor: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  visible: false,
+  isInstructor: true,
 });
 
-const emit = defineEmits(["close", "send-feedback"]);
+const emit = defineEmits<{
+  close: [];
+  "send-feedback": [feedback: SendFeedbackPayload];
+}>();
 
-const feedbackTexts = ref([]);
-const feedbackStates = ref({});
-const selectedSubmissionIndex = ref(0);
-const selectedSubmission = ref(null);
+const feedbackTexts = ref<string[]>([]);
+const feedbackStates = ref<FeedbackStates>({});
+const selectedSubmissionIndex = ref<number>(0);
+const selectedSubmission = ref<SelectedSubmission | null>(null);
 const assignmentTitle = ref("Assignment Details");
 
-const modalProps = ref({
-  title: null,
+const modalProps = ref<
+  Omit<InstanceType<typeof RdsModal>["$props"], "visible">
+>({
+  title: undefined,
   titleVariant: "dark-3",
   size: "lg",
   centered: true,
@@ -352,7 +385,7 @@ const modalProps = ref({
 const sortedSubmissions = computed(() => {
   if (!props.assignment?.submissions) return [];
   return [...props.assignment.submissions].sort(
-    (a, b) => new Date(a.submittedAt) - new Date(b.submittedAt)
+    (a, b) => Date.parse(a.submittedAt) - Date.parse(b.submittedAt)
   );
 });
 
@@ -385,14 +418,18 @@ watch(
 );
 
 const parsedAIFeedback = computed(() => {
-  let current =
+  const current =
     sortedSubmissions.value[selectedSubmissionIndex.value]?.aiFeedback;
+  console.log("current", current);
   if (!current) return null;
   try {
-    if (Array.isArray(current)) current = current[0];
-    if (typeof current === "string") current = JSON.parse(current);
-    if (typeof current === "string") current = JSON.parse(current);
-    return current;
+    if (Array.isArray(current)) {
+      const currentValue: LessonFeedback = JSON.parse(current[0]);
+      return currentValue;
+    } else {
+      const currentValue: LessonFeedback = JSON.parse(current);
+      return currentValue;
+    }
   } catch (err) {
     console.error("Failed to parse AI feedback:", err);
     return null;
@@ -406,7 +443,7 @@ function updateFeedbackTexts() {
 }
 
 function updateFeedbackStates() {
-  const states = {};
+  const states: FeedbackStates = {};
   sortedSubmissions.value.forEach((submission, index) => {
     states[index] = {
       isSubmitted: Boolean(submission.instructorFeedback?.trim()),
@@ -416,7 +453,7 @@ function updateFeedbackStates() {
   feedbackStates.value = states;
 }
 
-function getFeedbackState(index) {
+function getFeedbackState(index: number) {
   return (
     feedbackStates.value[index] || { isSubmitted: false, isEditing: false }
   );
@@ -426,18 +463,17 @@ function closeModal() {
   emit("close");
 }
 
-function handleSubmissionChange(value) {
+function handleSubmissionChange(value: DropdownOption | null) {
   if (value && value.value) {
     selectedSubmissionIndex.value = parseInt(value.value);
   }
 }
-
-function sendFeedback(index) {
+function sendFeedback(index: number) {
   const submission = sortedSubmissions.value[index];
-  if (submission && feedbackTexts.value[index]?.trim()) {
+  if (submission && feedbackTexts.value[index]?.trim() && props.assignment) {
     emit("send-feedback", {
       assignmentId: props.assignment.id,
-      submissionId: submission.id,
+      submissionId: submission.submissionId,
       feedback: feedbackTexts.value[index].trim(),
     });
     feedbackStates.value[index] = {
@@ -447,14 +483,14 @@ function sendFeedback(index) {
   }
 }
 
-function editFeedback(index) {
+function editFeedback(index: number) {
   feedbackStates.value[index] = {
     ...feedbackStates.value[index],
     isEditing: true,
   };
 }
 
-function cancelEdit(index) {
+function cancelEdit(index: number) {
   feedbackTexts.value[index] =
     sortedSubmissions.value[index].instructorFeedback || "";
   feedbackStates.value[index] = {
@@ -463,13 +499,13 @@ function cancelEdit(index) {
   };
 }
 
-function getFeedbackButtonText(index) {
+function getFeedbackButtonText(index: number) {
   return getFeedbackState(index).isSubmitted
     ? "Send Updated Feedback"
     : "Send Feedback";
 }
 
-function formatDate(dateString, value) {
+function formatDate(dateString: string, value: DateFormat) {
   return formatDateTime(dateString, value);
 }
 

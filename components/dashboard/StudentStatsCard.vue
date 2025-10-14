@@ -9,7 +9,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 defineProps({
   title: {
     type: String,
@@ -22,7 +22,7 @@ defineProps({
   color: {
     type: String,
     default: "primary",
-    validator: (value) =>
+    validator: (value: string) =>
       ["primary", "success", "warning", "danger", "info", "secondary"].includes(
         value
       ),

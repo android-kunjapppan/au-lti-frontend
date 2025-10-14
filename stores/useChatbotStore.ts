@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { computed, onMounted, ref, shallowRef } from "vue";
 import { useCountdown } from "~/composables/useCountdown";
+import { useSharedAudioContext } from "~/composables/useSharedAudioContext";
 import { useTTSAudioManager } from "~/composables/useTTSAudioManager";
 import { useAvatarStore } from "~/stores/useAvatarStore";
 import type { Thread } from "~/types/types";
@@ -17,7 +18,7 @@ export const useChatbotStore = defineStore("chatbot", () => {
   const streamingResponse = ref("");
   const lastMessageSent = ref(true);
   const toolCallStatus = ref<string[]>([]);
-  const audioContext = shallowRef<AudioContext | null>(null);
+  const { audioContext, initAudioContext } = useSharedAudioContext();
   const eventResponseQueue = ref<
     Array<{
       text?: string;
@@ -160,18 +161,8 @@ export const useChatbotStore = defineStore("chatbot", () => {
     });
   };
 
-  /** gets audio context from the window so we can actually play audio, there should only be 1 audio context per session. */
-  const getAudioContext = async (): Promise<AudioContext> => {
-    if (!audioContext.value) {
-      audioContext.value = new (window.AudioContext ||
-        (window as typeof window & { webkitAudioContext: typeof AudioContext })
-          .webkitAudioContext)();
-    }
-    return audioContext.value;
-  };
-
   onMounted(() => {
-    getAudioContext();
+    initAudioContext();
   });
 
   return {

@@ -119,6 +119,8 @@ import type {
 import DateInput from "../DateInput.vue";
 import MultiSelectFilter from "./MultiSelectFilter.vue";
 
+const appStore = useAppStore();
+
 // Default filters constant
 const defaultFilters: DashboardFilters = {
   dateRange: { start: "", end: "" },
@@ -138,7 +140,9 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["filter-change"]);
+const emit = defineEmits<{
+  "filter-change": [filters: null | DashboardFilters];
+}>();
 
 const showModal = ref(false);
 const loadingData = ref(false);
@@ -166,8 +170,8 @@ const startDateInput = ref<InstanceType<typeof DateInput>>();
 const endDateInput = ref<InstanceType<typeof DateInput>>();
 
 // Refs for MultiSelectFilter components to access their methods
-const studentFilter = ref<InstanceType<typeof MultiSelectFilter>>();
-const assignmentFilter = ref<InstanceType<typeof MultiSelectFilter>>();
+const studentFilter = useTemplateRef("studentFilter");
+const assignmentFilter = useTemplateRef("assignmentFilter");
 
 // Date validation state
 const dateRangeError = ref<string | null>(null);
@@ -266,13 +270,6 @@ const assignmentList = computed(() => {
   }));
 });
 
-function getLtik() {
-  const route = useRoute();
-  const ltik = route.query.ltik;
-  if (!ltik || typeof ltik !== "string") throw new Error("Missing LTI key");
-  return ltik;
-}
-
 async function fetchStudentsAndAssignments() {
   const config = useRuntimeConfig();
   loadingData.value = true;
@@ -281,7 +278,7 @@ async function fetchStudentsAndAssignments() {
     const res = await fetch(url, {
       credentials: "include",
       headers: {
-        Authorization: "Bearer " + getLtik(),
+        Authorization: "Bearer " + (await appStore.getLtiKey()),
       },
     });
     if (!res.ok) {

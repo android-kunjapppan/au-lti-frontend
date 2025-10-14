@@ -82,9 +82,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useAvatarStore } from "@/stores/useAvatarStore";
 import ContentContainer from "~/components/ContentContainer.vue";
 import LoadingSpinner from "~/components/LoadingSpinner.vue";
-import { useCanvasOAuth } from "~/composables/useCanvasOAuth";
 import { useLessonOverview } from "~/composables/useLessonOverview";
-import { isCanvasOAuthError } from "~/utils/auth";
 
 definePageMeta({
   middleware: "conversation-auth",
@@ -106,15 +104,13 @@ const lessonOverview = computed(() => {
 
     return {
       lessonTitle: isTest ? "Showcase Assignment" : "Lesson Overview",
-      lessonDescription: isTest
-        ? `You will showcase ${lesson.lesson.description}`
-        : `You will practice ${lesson.lesson.description}`,
+      lessonDescription: lesson.lesson.description,
       startButtonText: isTest ? "Start Now" : "Start lesson",
       sceneLocationLabel: "You're in:",
       sceneLocationName: lesson.location.city,
       speakerLabel: "You'll be speaking with:",
       speakerName: lesson.character.name,
-      locationPicUrl: lesson.location.photo || "german.png",
+      locationPicUrl: lesson.location.photo || "/images/mexico.png",
     };
   }
   return null; // Only return null if no lesson overview data at all
@@ -122,7 +118,6 @@ const lessonOverview = computed(() => {
 
 const appStore = useAppStore();
 const avatarStore = useAvatarStore();
-const { startOAuthFlow } = useCanvasOAuth();
 const { userInfo, isLoadingUserInfo, footerHeading, footerSubheading } =
   storeToRefs(appStore);
 const { startConversation, isStartConversationLoading } =
@@ -135,18 +130,8 @@ const onStartConversation = async () => {
     isStartConversationLoading.value = true;
 
     if (!userInfo.value) {
-      try {
-        await startOAuthFlow(); // Show OAuth popup
-        await appStore.fetchUserInfo(); // Try again
-
-        if (!userInfo.value) {
-          appStore.addAlert("User info not found after OAuth");
-          throw new Error("User info not found after OAuth");
-        }
-      } catch (oauthError) {
-        console.warn("OAuth popup cancelled or failed:", oauthError);
-        return; // Exit gracefully – don't proceed
-      }
+      await navigateTo("/login");
+      return;
     }
 
     // At this point, userInfo is guaranteed
@@ -158,26 +143,6 @@ const onStartConversation = async () => {
     isStartConversationLoading.value = false;
   }
 };
-
-async function fetchUserInfoWithOAuth() {
-  try {
-    await appStore.fetchUserInfo(); // Try to fetch user info
-  } catch (error: unknown) {
-    const isOAuthRequired =
-      error instanceof Error &&
-      (error.message === "Canvas OAuth Required" ||
-        (isCanvasOAuthError(error) &&
-          error.response?.status === 401 &&
-          error.response?.data?.code === "CANVAS_OAUTH_REQUIRED"));
-
-    if (isOAuthRequired) {
-      console.log("OAuth required on mount – skipping popup");
-      return; // Don't show popup on mount
-    } else {
-      throw error; // Any other error, throw as usual
-    }
-  }
-}
 
 // Function to update footer information based on lesson overview
 const updateFooterInfo = () => {
@@ -206,10 +171,9 @@ watch(
 
 // Preload user info and lesson overview on component mount for better UX
 onMounted(async () => {
-  updateFooterInfo();
-
   try {
-    await fetchUserInfoWithOAuth();
+    await appStore.fetchUserInfoWithOAuth();
+    if (!userInfo.value) navigateTo("/login");
     await fetchLessonOverview();
     await avatarStore.loadModel();
   } catch (error) {
@@ -219,6 +183,7 @@ onMounted(async () => {
       );
     }
   }
+  updateFooterInfo();
 });
 
 // User info is now managed by the app store and fetched when needed
