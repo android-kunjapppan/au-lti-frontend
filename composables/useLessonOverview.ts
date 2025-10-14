@@ -68,58 +68,50 @@ export const useLessonOverview = () => {
       const config = useRuntimeConfig();
       const appStore = useAppStore();
 
-      // Check if we have authentication - if not, use mock data
-      // For development, always use mock data
-      if (!appStore.lbCanvasJwt) {
-        // Comprehensive mock lesson data for development without authentication
-        const mockData: LessonOverviewData = {
-          lesson: {
-            lessonId: targetLessonId,
-            location: {
-              city: "Air Force Base",
-              photo: "/german.png",
-            },
-            character: {
-              name: "2nd Lt Martinez",
-            },
-            lesson: {
-              title: "Module 2:",
-              description:
-                "Meeting with 2nd Lt Martinez about tardiness. Goals:",
-              lessonGoals: [
-                "Address the issue",
-                "Understand causes",
-                "Set clear expectations",
-                "Offer support",
-              ],
-            },
-            footerTitle: "Module 2:",
-            footerDescription:
-              "Applying Disciplinary Actions to a Junior Officer",
+      // Comprehensive lesson data for development without authentication
+      const mockData: LessonOverviewData = {
+        lesson: {
+          lessonId: targetLessonId,
+          location: {
+            city: "Air Force Base",
+            photo: "/german.png",
           },
-        };
+          character: {
+            name: "2nd Lt Martinez",
+          },
+          lesson: {
+            title: "Module 2:",
+            description: "Meeting with 2nd Lt Martinez about tardiness. Goals:",
+            lessonGoals: [
+              "Address the issue",
+              "Understand causes",
+              "Set clear expectations",
+              "Offer support",
+            ],
+          },
+          footerTitle: "Module 2:",
+          footerDescription:
+            "Applying Disciplinary Actions to a Junior Officer",
+        },
+      };
 
-        console.log("Setting lessonOverview.value to:", mockData);
-        lessonOverview.value = mockData;
-        console.log(
-          "lessonOverview.value after setting:",
-          lessonOverview.value
-        );
+      console.log("Setting lessonOverview.value to:", mockData);
+      lessonOverview.value = mockData;
+      console.log("lessonOverview.value after setting:", lessonOverview.value);
 
-        // Update avatar name in app store
-        if (mockData.lesson?.character?.name) {
-          appStore.setAvatarName(mockData.lesson.character.name);
-        }
-
-        // Clear loading state immediately for mock data
-        isLoading.value = false;
-        if (lessonOverviewTimeout) {
-          clearTimeout(lessonOverviewTimeout);
-          lessonOverviewTimeout = null;
-        }
-
-        return mockData;
+      // Update avatar name in app store
+      if (mockData.lesson?.character?.name) {
+        appStore.setAvatarName(mockData.lesson.character.name);
       }
+
+      // Clear loading state immediately for mock data
+      isLoading.value = false;
+      if (lessonOverviewTimeout) {
+        clearTimeout(lessonOverviewTimeout);
+        lessonOverviewTimeout = null;
+      }
+
+      return mockData;
 
       // Get authentication headers
       const headers = createApiHeaders();
