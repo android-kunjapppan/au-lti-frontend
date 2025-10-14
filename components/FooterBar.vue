@@ -120,7 +120,9 @@ const isConfirmCardVisible = ref(false);
 const isHoveringProgress = ref(false);
 let submitTimeout: NodeJS.Timeout | null = null;
 
-const isLessonContent = computed(() => route.name === "lesson-content");
+const isLessonContent = computed(
+  () => route.name === "lesson-content" || route.name === "index"
+);
 const isLessonResult = computed(() => route.name === "lesson-result");
 const isTimeoutRoute = computed(() => route.name === "timeout");
 

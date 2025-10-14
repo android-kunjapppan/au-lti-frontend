@@ -18,6 +18,21 @@
           aria-label="Lesson description">
           {{ lessonOverview.lessonDescription }}
         </div>
+
+        <!-- Lesson Goals Section -->
+        <ul
+          v-if="
+            lessonOverview.lessonGoals && lessonOverview.lessonGoals.length > 0
+          "
+          class="lesson-goals-list">
+          <li
+            v-for="(goal, index) in lessonOverview.lessonGoals"
+            :key="index"
+            class="lesson-goal-item fs-large">
+            {{ goal }}
+          </li>
+        </ul>
+
         <button
           class="start-lesson-btn fs-medium align-self-start"
           @click="onStartConversation"
@@ -41,8 +56,8 @@
           aria-label="Location information">
           <div class="location-image-wrapper">
             <img
-              :src="lessonOverview.locationPicUrl"
-              :alt="`Location of ${lessonOverview.sceneLocationName}`"
+              src="/images/environment.png"
+              alt="Location of Airbase"
               class="location-image"
               aria-label="Location" />
           </div>
@@ -68,9 +83,12 @@
           </div>
         </section>
         <div class="speaker-avatar-container">
-          <Suspense>
-            <AvatarModel />
-          </Suspense>
+          <img
+            height="150px"
+            width="auto"
+            class="speaker-avatar"
+            src="/avatar.png"
+            alt="Avatar" />
         </div>
       </template>
     </ContentContainer>
@@ -105,16 +123,19 @@ const lessonOverview = computed(() => {
     const isTest = appStore.isTest;
 
     return {
-      lessonTitle: isTest ? "Showcase Assignment" : "Lesson Overview",
+      lessonTitle: isTest ? "Showcase Assignment" : "Training scenario",
       lessonDescription: isTest
         ? `You will showcase ${lesson.lesson.description}`
-        : `You will practice ${lesson.lesson.description}`,
+        : lesson.lesson.description,
       startButtonText: isTest ? "Start Now" : "Start lesson",
       sceneLocationLabel: "You're in:",
       sceneLocationName: lesson.location.city,
       speakerLabel: "You'll be speaking with:",
       speakerName: lesson.character.name,
       locationPicUrl: lesson.location.photo || "german.png",
+      lessonGoals: lesson.lesson.lessonGoals || [],
+      footerTitle: lesson.footerTitle || "",
+      footerDescription: lesson.footerDescription || "",
     };
   }
   return null; // Only return null if no lesson overview data at all
@@ -181,13 +202,13 @@ async function fetchUserInfoWithOAuth() {
 
 // Function to update footer information based on lesson overview
 const updateFooterInfo = () => {
-  const lesson = lessonOverviewData.value?.lesson;
+  const lesson = lessonOverviewData.value;
   if (lesson?.lesson) {
-    const isTest = appStore.isTest;
-    const prefix = isTest ? "Showcase Assignment" : "Practice Session";
+    // const isTest = appStore.isTest;
+    // const prefix = isTest ? "Showcase Assignment" : "Practice Session";
 
-    footerHeading.value = lesson.lesson.title;
-    footerSubheading.value = `${prefix} - ${lesson.lesson.description}`;
+    footerHeading.value = lesson.lesson.footerTitle;
+    footerSubheading.value = `${lesson.lesson.footerDescription}`;
   } else {
     // Clear footer when no data (shows loading instead)
     footerHeading.value = "";
@@ -236,7 +257,6 @@ onMounted(async () => {
 .lesson-description {
   line-height: 27px;
   padding: 8px 0;
-  min-height: 187px;
   color: var(--rds-label-color);
 }
 
@@ -249,7 +269,7 @@ onMounted(async () => {
   gap: 4px;
   flex-shrink: 0;
   border-radius: 103px;
-  background: var(--rds-success-light-hover);
+  background: var(--rds-secondary);
   border: none;
   font-style: normal;
   font-weight: 700;
@@ -257,7 +277,7 @@ onMounted(async () => {
   transition: all 0.3s ease;
 }
 .start-lesson-btn:hover {
-  background: var(--rds-success-light);
+  background: var(--rds-secondary);
 }
 
 .start-lesson-btn:disabled {
@@ -266,7 +286,7 @@ onMounted(async () => {
 }
 
 .start-lesson-btn:disabled:hover {
-  background: var(--rds-success-light-hover);
+  background: var(--rds-secondary);
 }
 
 /* Right section styles */
@@ -330,7 +350,17 @@ onMounted(async () => {
   position: absolute;
   bottom: 0px;
   right: 0px;
-  width: 300px;
-  height: 200px;
+  width: 170px;
+  height: 170px;
+}
+
+/* Lesson Goals Styles */
+.lesson-goals-list {
+  padding-left: 16px;
+  margin: 16px 0 8px;
+}
+
+.lesson-goal-item {
+  color: var(--rds-text-secondary);
 }
 </style>

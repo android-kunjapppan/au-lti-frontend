@@ -142,7 +142,10 @@ export interface LessonOverviewData {
     lesson: {
       title: string;
       description: string;
+      lessonGoals?: string[];
     };
+    footerTitle?: string;
+    footerDescription?: string;
   };
 }
 //#endregion
