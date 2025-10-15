@@ -22,7 +22,7 @@ interface STTManagerOptions {
 
 export const useSTTManager = ({
   textStorage,
-  language = SupportedLang.SPANISH,
+  language = SupportedLang.ENGLISH,
   onAlert,
   onWebSocketOpen,
   onWebSocketSend,

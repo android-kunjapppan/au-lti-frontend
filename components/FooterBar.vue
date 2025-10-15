@@ -35,7 +35,7 @@
 
           <!-- Speed Modal -->
           <div v-if="showSettings" class="speed-modal" ref="settings-modal">
-            <h1 class="fs-xs px-space-xs">Audio playback speed</h1>
+            <h1 class="text-black fs-xs px-space-xs">Audio playback speed</h1>
             <div class="speed-options">
               <button
                 v-for="speed in appStore.speedOptions"
@@ -297,12 +297,12 @@ const handleSubmit = async () => {
   font-weight: 700;
   color: var(--rds-dark-3);
   white-space: nowrap;
-  background: var(--rds-success-light);
+  background: var(--rds-secondary);
   text-decoration: none;
 }
 
 .view-result-btn:hover {
-  background: var(--rds-success-light-hover);
+  background: var(--rds-secondary);
 }
 
 .view-result-btn:disabled {

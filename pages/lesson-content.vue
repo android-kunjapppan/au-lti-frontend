@@ -25,11 +25,6 @@
               :disabled="suggestion.isLoading" />
             <MicrophoneInput
               :is-active="!isSubmitButtonVisible && !isMicrophoneDisabled" />
-            <SuggestionBar
-              @on-suggestion-click="handleShowSuggestion"
-              :is-active="showSuggestionBox || suggestion.isLoading"
-              :is-loading="suggestion.isLoading"
-              class="mb-space-xxs" />
           </div>
           <audio
             ref="audioElement"
@@ -219,7 +214,7 @@ const submitSuggestionRequest = async (conversationString: string) => {
           data: {
             request_type: WebSocketTextRequestType.SUGGESTION,
             text: conversationString,
-            language: "es",
+            language: SupportedLang.ENGLISH,
             lessonId: getLessonId(),
           },
         })

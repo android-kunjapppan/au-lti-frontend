@@ -2,6 +2,7 @@ import type * as THREE from "three";
 // Enum of supported languages and associated ISO codes
 export const SupportedLang = {
   SPANISH: "es",
+  ENGLISH: "en",
 } as const;
 
 export const CONVERSATION_ID = "c8c8e60a-1900-46d2-8c03-348f241ac0e5";

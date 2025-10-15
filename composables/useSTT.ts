@@ -1,5 +1,6 @@
 import { useSpeechRecognition } from "@vueuse/core";
 import { usePermissionManager } from "~/composables/usePermissionManager";
+import { SupportedLang } from "~/utils/constants";
 
 /**
  *
@@ -14,7 +15,7 @@ export const useSTT = (args: {
   const {
     textStorage,
     disableTimeout = true,
-    lang = "es",
+    lang = SupportedLang.ENGLISH,
     preventUpdates,
   } = args;
 

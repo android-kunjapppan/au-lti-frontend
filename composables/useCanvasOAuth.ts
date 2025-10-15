@@ -18,7 +18,7 @@ const buildCanvasOAuthUrl = () => {
     runtimeConfig.public.oAuthRedirectUrl
   );
   const scopes = [
-    "url:POST|/api/v1/courses/:course_id/assignments/:assignment_id/submissions",
+    // "url:POST|/api/v1/courses/:course_id/assignments/:assignment_id/submissions",
     "url:GET|/api/v1/courses/:course_id/assignments",
     "url:GET|/api/v1/courses/:course_id/assignments/:id",
     "url:GET|/api/v1/users/:id",

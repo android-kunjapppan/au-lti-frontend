@@ -319,7 +319,7 @@ const sendMessage = async () => {
           data: {
             request_type: "user-text",
             text: userPrompt.value,
-            language: SupportedLang.SPANISH,
+            language: SupportedLang.ENGLISH,
             bot_message_id: botMessageId,
           },
         } satisfies UserTextConversationRequestBody)
@@ -388,7 +388,7 @@ const handleUserFeedback = async (messageId: string) => {
             data: {
               request_type: WebSocketTextRequestType.FEEDBACK,
               text: message.text,
-              language: "es",
+              language: SupportedLang.ENGLISH,
             },
           } satisfies FeedbackConversationRequestBody)
         );
@@ -471,7 +471,7 @@ const handleUserTranslate = async (messageId: string) => {
             data: {
               request_type: WebSocketTextRequestType.TRANSLATION,
               text: message.text,
-              language: "es",
+              language: SupportedLang.ENGLISH,
             },
           } satisfies TranslationConversationRequestBody)
         );
@@ -610,7 +610,7 @@ const sendTTSRequest = async (
         data: {
           request_type: "tts",
           text: text,
-          language: SupportedLang.SPANISH,
+          language: SupportedLang.ENGLISH,
         },
       };
 

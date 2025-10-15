@@ -36,7 +36,7 @@
         </p>
       </section>
 
-      <footer class="message-buttons d-flex align-items-center">
+      <!-- <footer class="message-buttons d-flex align-items-center">
         <ButtonComponent
           :disabled="playButtonDisabled"
           :loading="playLoading || props.audioRegenerating"
@@ -122,7 +122,7 @@
             <span class="button-text fs-xs">Retry</span>
           </template>
         </ButtonComponent>
-      </footer>
+      </footer> -->
     </div>
   </article>
 </template>
@@ -130,7 +130,6 @@
 <script setup lang="ts">
 import { useAppStore } from "../stores/appStore";
 import { useMessageStore } from "../stores/messageStore";
-import ButtonComponent from "./ButtonComponent.vue";
 
 const messageStore = useMessageStore();
 const appStore = useAppStore();

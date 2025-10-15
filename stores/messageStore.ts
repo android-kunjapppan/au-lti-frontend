@@ -1,6 +1,7 @@
 import { StorageSerializers, useStorage } from "@vueuse/core";
 import { v4 as uuid } from "uuid";
 import type { Optional } from "~/types/types";
+import { SupportedLang } from "~/utils/constants";
 
 interface ConversationMessage {
   text?: string;
@@ -656,7 +657,7 @@ export const useMessageStore = defineStore("messages", () => {
           data: {
             request_type: "user-text",
             text: userMessageText,
-            language: "es",
+            language: SupportedLang.ENGLISH,
             bot_message_id: messageId,
           },
         })

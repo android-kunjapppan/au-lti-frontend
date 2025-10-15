@@ -3,9 +3,7 @@
     <LoadingSpinner v-if="isLoadingUserInfo" />
     <ContentContainer v-else-if="!isLoadingUserInfo && userInfo">
       <div class="feedback-avatar-container">
-        <Suspense>
-          <AvatarModel />
-        </Suspense>
+        <img height="130px" width="auto" src="/avatar.png" alt="Avatar" />
       </div>
       <template #left>
         <div class="left-content pretty-scrollbar">
@@ -79,8 +77,8 @@
           class="feedback-icon me-space-xxs"
           aria-hidden="true" />
         <span>
-          Feedback is AI generated. Your professor will provide more feedback
-          soon.
+          The feedback shown here is AI-generated. Your professor will provide
+          additional feedback soon.
         </span>
         <div class="success-animation" aria-hidden="true">
           <div class="animation-container">
@@ -246,10 +244,8 @@ onMounted(async () => {
 
 .feedback-avatar-container {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 176px;
-  height: 183px;
+  bottom: 8px;
+  right: 10px;
   z-index: 1;
   pointer-events: none;
 }

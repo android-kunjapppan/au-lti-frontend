@@ -26,7 +26,7 @@ export const useLessonOverview = () => {
 
         // Map course language to supported language codes
         if (courseLanguage.toLowerCase() === "spanish") {
-          return SupportedLang.SPANISH;
+          return SupportedLang.ENGLISH;
         }
 
         // For other languages, use first 2 characters
